@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img">
+  <title>MHM Global</title>
+  <rect width="64" height="64" rx="14" fill="#142B44"/>
+  <g fill="#F7F9FC" transform="translate(32 32) scale(0.62) translate(-32 -32)">
+    <path d="M8 8h9v48H8z"/><path d="M47 8h9v48H47z"/><path d="M27.5 8h9v21h-9z"/><path d="M27.5 43h9v13h-9z"/>
+    <path d="M3 35h58v2H3z"/>
+    <circle cx="32" cy="36" r="8"/>
+  </g>
+</svg>
