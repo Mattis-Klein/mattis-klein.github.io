@@ -1,0 +1,57 @@
+import { LogoMark } from "./Logo";
+
+const points = [
+  {
+    index: "01",
+    title: "What we do",
+    body: "Distribute and sell low-voltage technology for residential, commercial, and building use. Retail and wholesale.",
+  },
+  {
+    index: "02",
+    title: "Who it’s for",
+    body: "Households, businesses, commercial buyers, and wholesale purchasers.",
+  },
+  {
+    index: "03",
+    title: "What we don’t do",
+    body: "MHM Global is not an installer, a manufacturer, or a security installation company.",
+  },
+];
+
+export function About() {
+  return (
+    <section className="section" id="about" aria-labelledby="about-title" data-reveal tabIndex={-1}>
+      <div className="about-grid">
+        <div>
+          <p className="eyebrow">
+            <span className="eyebrow-mark" aria-hidden="true" />
+            About
+          </p>
+          <div className="about-mark" aria-hidden="true">
+            <LogoMark />
+          </div>
+          <h2 id="about-title">A distributor for homes, businesses, and buildings.</h2>
+          <p className="lede">
+            MHM Global distributes and sells security, recording, networking, smart-home, access, and
+            life-safety products. People buy for their own spaces, and businesses buy at wholesale.
+          </p>
+          <p>
+            Retail sales are also made through channels such as Amazon and others. A storefront link is
+            not published here.
+          </p>
+        </div>
+        <dl className="about-list">
+          {points.map((point) => (
+            <div key={point.index}>
+              <dt>
+                <span>{point.index}</span>
+                {point.title}
+              </dt>
+              <dd>{point.body}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    </section>
+  );
+}
