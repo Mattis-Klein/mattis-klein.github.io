@@ -1,9 +1,7 @@
 import { useState } from "react";
 import { categories, type CategoryId } from "../content";
-import { buildScene } from "../lib/sceneModel";
 import { ArrowIcon } from "./Icons";
-
-const scene = buildScene();
+import { LatticeStage } from "./LatticeStage";
 
 type HeroProps = {
   onWholesale: () => void;
@@ -18,20 +16,28 @@ export function Hero({ onWholesale, onShowCategory, onInquire }: HeroProps) {
   return (
     <section className="hero" aria-labelledby="hero-title">
       <div className="hero-copy">
-        <p className="eyebrow rise">
+        <p className="eyebrow">
           <span className="eyebrow-mark" aria-hidden="true" />
           Low-voltage distribution
         </p>
         <h1 id="hero-title">
-          Technology for Every Space<span className="dot">.</span>
+          <span className="line">
+            <span>Supplied for</span>
+          </span>
+          <span className="line">
+            <span>
+              every space<span className="dot">.</span>
+            </span>
+          </span>
         </h1>
         <p className="lede">
-          Security, connectivity, and smart-building technology for homes and businesses. Supplied by
-          MHM Global.
+          MHM Global distributes and sells low-voltage electronics, equipment, and supplies for
+          individuals and businesses. Surveillance, networking, smart home, access, and life safety
+          belong to one range.
         </p>
         <div className="hero-actions">
           <a className="btn btn-primary" href="#categories">
-            Explore Our Products
+            Explore the range
             <ArrowIcon />
           </a>
           <a
@@ -42,70 +48,17 @@ export function Hero({ onWholesale, onShowCategory, onInquire }: HeroProps) {
               onWholesale();
             }}
           >
-            Wholesale Inquiries
+            Wholesale inquiries
           </a>
         </div>
-        <p className="hero-meta">Retail and wholesale · Homes, businesses, and buildings</p>
+        <p className="hero-meta">Retail and wholesale · Not an installer or manufacturer</p>
       </div>
 
       <div className="sheet">
-        <div className="scene-canvas" style={{ aspectRatio: `${scene.width} / ${scene.height}` }}>
-          <svg
-            className="scene-svg"
-            viewBox={`0 0 ${scene.width} ${scene.height}`}
-            role="img"
-            aria-label="Architectural study of a home linked to a larger building, with five supply points."
-          >
-            <g transform={scene.transform}>
-              {scene.shapes.map((shape, index) => (
-                <path
-                  key={index}
-                  d={shape.d}
-                  fill={shape.fill}
-                  stroke={shape.stroke}
-                  strokeWidth={shape.sw}
-                  strokeOpacity={shape.strokeOpacity}
-                  strokeLinejoin="miter"
-                />
-              ))}
-              {scene.routes.map((route, index) => (
-                <path key={`route-${index}`} className="route" d={route} pathLength={1} />
-              ))}
-              {scene.labels.map((label) => (
-                <text
-                  key={label.text}
-                  className="scene-label"
-                  x={label.x}
-                  y={label.y}
-                  textAnchor={label.anchor ?? "start"}
-                >
-                  {label.text}
-                </text>
-              ))}
-            </g>
-          </svg>
-          {scene.hotspots.map((spot) => {
-            const category = categories.find((item) => item.id === spot.id);
-            if (!category) return null;
-            const pressed = activeId === spot.id;
-            return (
-              <button
-                key={spot.id}
-                type="button"
-                className="hotspot"
-                style={{ left: `${spot.x}%`, top: `${spot.y}%` }}
-                aria-pressed={pressed}
-                aria-controls="scene-readout"
-                onClick={() => setActiveId(pressed ? null : spot.id)}
-              >
-                <span aria-hidden="true">{spot.index}</span>
-                <span className="sr-only">
-                  {category.title}. {pressed ? "Hide details" : "Show details"}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+        <LatticeStage
+          activeId={activeId}
+          onToggle={(id) => setActiveId((current) => (current === id ? null : id))}
+        />
         <div id="scene-readout" className="readout" aria-live="polite">
           {active ? (
             <>
@@ -124,14 +77,14 @@ export function Hero({ onWholesale, onShowCategory, onInquire }: HeroProps) {
             </>
           ) : (
             <p>
-              Select a numbered point on the drawing. Each mark is a kind of low-voltage technology MHM
-              Global supplies — not a project we install.
+              Select a module in the range. Each mark is a kind of equipment MHM Global sells — not a
+              system we install.
             </p>
           )}
         </div>
         <div className="sheet-meta">
-          <span>Connected volumes</span>
-          <span>Not to scale</span>
+          <span>Supply range</span>
+          <span>Five groups</span>
         </div>
       </div>
     </section>

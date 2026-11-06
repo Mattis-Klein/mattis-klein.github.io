@@ -50,15 +50,20 @@ export function Contact({ inquiryType, setInquiryType, regarding, setRegarding }
   }
 
   return (
-    <section className="section" id="contact" aria-labelledby="contact-title" data-reveal tabIndex={-1}>
+    <section className="section" id="contact" aria-labelledby="contact-title" data-scrub tabIndex={-1}>
       <div className="contact-grid">
         <div className="contact-sticky">
+          <div className="contact-copy">
           <p className="eyebrow">
             <span className="eyebrow-mark" aria-hidden="true" />
             Contact
           </p>
           <h2 id="contact-title">
-            Let’s Build a Connection<span className="dot">.</span>
+            <span className="mask">
+              <span className="mask-inner">
+                Inquire about the range<span className="dot">.</span>
+              </span>
+            </span>
           </h2>
           <p className="lede">
             Shape a purchasing or product question here. Direct contact details for MHM Global are still
@@ -82,6 +87,7 @@ export function Contact({ inquiryType, setInquiryType, regarding, setRegarding }
             Until those details are confirmed, use the preview to organize an inquiry. It stays in the
             browser.
           </p>
+          </div>
         </div>
 
         <form className="inquiry" noValidate onSubmit={onSubmit}>

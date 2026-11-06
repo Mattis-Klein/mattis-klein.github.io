@@ -27,7 +27,7 @@ export function Footer({ onOpenCategory }: FooterProps) {
             const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
             window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
           }} />
-          <p>Low-voltage technology for homes, businesses, and buildings. Distributed and sold by MHM Global.</p>
+          <p>Low-voltage electronics, equipment, and supplies for individuals and businesses. Sold and distributed by MHM Global.</p>
         </div>
         <nav aria-label="Footer">
           <p className="footer-label">Navigate</p>

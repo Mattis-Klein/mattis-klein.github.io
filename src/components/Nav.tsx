@@ -21,6 +21,7 @@ export function Nav({ open, setOpen, onInquire }: NavProps) {
   const toggleRef = useRef<HTMLButtonElement>(null);
   const returnFocus = useRef(true);
   const [current, setCurrent] = useState("home");
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
     const sections = ["categories", "about", "wholesale", "contact"]
@@ -38,6 +39,7 @@ export function Nav({ open, setOpen, onInquire }: NavProps) {
     sections.forEach((section) => observer.observe(section));
     const onScroll = () => {
       if (window.scrollY < 48) setCurrent("home");
+      setScrolled(window.scrollY > 8);
     };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -118,7 +120,7 @@ export function Nav({ open, setOpen, onInquire }: NavProps) {
 
   return (
     <>
-    <header className="site-header" id="top" inert={open ? true : undefined}>
+    <header className="site-header" id="top" data-scrolled={scrolled ? "true" : "false"} inert={open ? true : undefined}>
       <nav className="nav" aria-label="Primary">
         <Logo onClick={(event) => go(event, "top")} />
         <div className="nav-links">
@@ -167,7 +169,12 @@ export function Nav({ open, setOpen, onInquire }: NavProps) {
           </div>
           <div className="nav-panel-links">
             {LINKS.map((link) => (
-              <a key={link.id} href={`#${link.id}`} onClick={(event) => go(event, link.id)}>
+              <a
+                key={link.id}
+                href={`#${link.id}`}
+                aria-current={current === (link.id === "top" ? "home" : link.id) ? "true" : undefined}
+                onClick={(event) => go(event, link.id)}
+              >
                 {link.label}
               </a>
             ))}

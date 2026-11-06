@@ -6,8 +6,6 @@ import {
   inquiryLabel,
   validateInquiry,
 } from "./inquiry";
-import { buildScene } from "./sceneModel";
-
 const valid = {
   name: "Amina Cole",
   company: "",
@@ -77,34 +75,5 @@ describe("categories", () => {
       "Access Control",
       "Life Safety",
     ]);
-  });
-});
-
-describe("hero scene", () => {
-  it("places five separated supply points inside the drawing", () => {
-    const scene = buildScene();
-    expect(scene.hotspots).toHaveLength(5);
-    expect(scene.width).toBeGreaterThan(200);
-    expect(scene.height / scene.width).toBeGreaterThan(0.7);
-    expect(scene.height / scene.width).toBeLessThan(1.35);
-
-    for (const spot of scene.hotspots) {
-      expect(spot.x).toBeGreaterThan(8);
-      expect(spot.x).toBeLessThan(92);
-      expect(spot.y).toBeGreaterThan(8);
-      expect(spot.y).toBeLessThan(92);
-    }
-
-    const mobileWidth = 300;
-    const mobileHeight = mobileWidth * (scene.height / scene.width);
-    for (let i = 0; i < scene.hotspots.length; i += 1) {
-      for (let j = i + 1; j < scene.hotspots.length; j += 1) {
-        const a = scene.hotspots[i];
-        const b = scene.hotspots[j];
-        const dx = ((a.x - b.x) / 100) * mobileWidth;
-        const dy = ((a.y - b.y) / 100) * mobileHeight;
-        expect(Math.hypot(dx, dy)).toBeGreaterThan(46);
-      }
-    }
   });
 });

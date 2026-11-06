@@ -1,5 +1,6 @@
 import { categories, type CategoryId } from "../content";
-import { ArrowIcon, CategoryIcon } from "./Icons";
+import { ArrowIcon } from "./Icons";
+import { ModuleMark } from "./ModuleMark";
 
 type CategoriesProps = {
   openId: CategoryId | null;
@@ -9,21 +10,31 @@ type CategoriesProps = {
 
 export function Categories({ openId, onToggle, onInquire }: CategoriesProps) {
   return (
-    <section className="section section-mist" id="categories" aria-labelledby="categories-title" data-reveal tabIndex={-1}>
+    <section
+      className="section section-mist"
+      id="categories"
+      aria-labelledby="categories-title"
+      data-scrub
+      tabIndex={-1}
+    >
       <div className="section-head">
         <p className="eyebrow">
           <span className="eyebrow-mark" aria-hidden="true" />
           Product categories
         </p>
-        <h2 id="categories-title">Five groups of equipment.</h2>
+        <h2 id="categories-title">
+          <span className="mask">
+            <span className="mask-inner">Five groups of equipment.</span>
+          </span>
+        </h2>
         <p className="lede">
-          MHM Global distributes and sells low-voltage technology for homes, businesses, and buildings.
-          Open a category to see what is supplied, then start a business inquiry if you want to ask about
-          a purchase.
+          Cameras and recorders, networking gear, thermostats and smart-home devices, electronic locks,
+          doorbells, intercoms, and smoke detectors. Smart home is one group, not the whole catalog. Open
+          a category to see what is sold, then start an inquiry if you want to ask about a purchase.
         </p>
       </div>
-      <div className="cat-grid">
-        {categories.map((category) => {
+      <div className="cat-grid" id="category-grid">
+        {categories.map((category, index) => {
           const open = openId === category.id;
           const panelId = `category-${category.id}-panel`;
           const buttonId = `category-${category.id}-toggle`;
@@ -31,11 +42,14 @@ export function Categories({ openId, onToggle, onInquire }: CategoriesProps) {
             <article
               key={category.id}
               id={`category-${category.id}`}
-              className={category.id === "surveillance" ? "cat-card feature" : "cat-card"}
+              className={open ? "cat-card is-open" : "cat-card"}
+              style={{ ["--i" as string]: index }}
             >
               <div className="cat-top">
                 <span className="cat-index">{category.index}</span>
-                <CategoryIcon id={category.id} />
+                <div className="cat-glyph" data-module-slot={category.id}>
+                  <ModuleMark id={category.id} variant="flat" />
+                </div>
               </div>
               <h3>{category.title}</h3>
               <p>{category.summary}</p>
