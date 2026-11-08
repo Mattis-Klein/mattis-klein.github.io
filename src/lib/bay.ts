@@ -1,5 +1,15 @@
 import { CATEGORY_IDS, type CategoryId } from "../content";
 
+/** Opaque fraction of each 210px sprite, unioned across the twelve yaw views. */
+const SPRITE_BOX = 210;
+const SPRITE_CONTENT: Record<CategoryId, { l: number; t: number; r: number; b: number }> = {
+  surveillance: { l: 0.2, t: 0.24, r: 0.8, b: 0.84 },
+  networking: { l: 0, t: 0.36, r: 1, b: 0.92 },
+  "smart-home": { l: 0.19, t: 0.07, r: 0.81, b: 0.84 },
+  access: { l: 0.22, t: 0.03, r: 0.77, b: 0.81 },
+  safety: { l: 0.21, t: 0.38, r: 0.79, b: 0.82 },
+};
+
 /**
  * Supply bay.
  * Opening: five machined modules share one lit plinth.
@@ -181,6 +191,14 @@ export function yawBlend(ry: number): { lo: number; hi: number; mix: number } {
   return { lo, hi: (lo + 1) % YAW_STEPS, mix };
 }
 
+/** One crisp sprite at rest. Crossfade only while the view is actually moving. */
+export function yawFrame(ry: number, moving: boolean): { lo: number; hi: number; mix: number } {
+  const blend = yawBlend(ry);
+  if (moving && blend.mix > 0.12 && blend.mix < 0.88) return blend;
+  const index = blend.mix >= 0.5 ? blend.hi : blend.lo;
+  return { lo: index, hi: index, mix: 0 };
+}
+
 const FOV = (30 * Math.PI) / 180;
 
 export function projectPart(
@@ -211,12 +229,171 @@ export function projectPart(
   const cz = dx * forward.x + dy * forward.y + dz * forward.z;
   const depth = Math.max(0.35, cz);
   const focal = 1 / Math.tan(FOV / 2);
-  const aspect = Math.max(width / Math.max(1, height), 1.45);
+  const aspect = width / Math.max(1, height);
   const ndcX = (cx / depth) * (focal / aspect);
   const ndcY = (cy / depth) * focal;
   return {
     x: (ndcX * 0.5 + 0.5) * width,
     y: (1 - (ndcY * 0.5 + 0.5)) * height,
     scale: (Math.min(width, height) / 780) * (3.15 / depth),
+  };
+}
+
+export type FigurePoint = { id: CategoryId; x: number; y: number; scale: number };
+
+/** Screen box of the opaque sprite after `translate(-50%, -78%) scale()`. */
+export function spriteBounds(point: FigurePoint): { left: number; top: number; right: number; bottom: number } {
+  const box = SPRITE_CONTENT[point.id];
+  const shift = (SPRITE_BOX - 0.78 * SPRITE_BOX) - SPRITE_BOX / 2;
+  return {
+    left: point.x + point.scale * (box.l * SPRITE_BOX - SPRITE_BOX / 2),
+    right: point.x + point.scale * (box.r * SPRITE_BOX - SPRITE_BOX / 2),
+    top: point.y + shift + point.scale * (box.t * SPRITE_BOX - SPRITE_BOX / 2),
+    bottom: point.y + shift + point.scale * (box.b * SPRITE_BOX - SPRITE_BOX / 2),
+  };
+}
+
+function unionBounds(items: FigurePoint[]) {
+  let left = Infinity;
+  let top = Infinity;
+  let right = -Infinity;
+  let bottom = -Infinity;
+  for (const point of items) {
+    const box = spriteBounds(point);
+    left = Math.min(left, box.left);
+    top = Math.min(top, box.top);
+    right = Math.max(right, box.right);
+    bottom = Math.max(bottom, box.bottom);
+  }
+  return { left, top, right, bottom, w: right - left, h: bottom - top };
+}
+
+/**
+ * Object size and cluster spread for one pose in one viewport.
+ * Size grows until the equipment fills the stage. Spread tightens only
+ * enough to keep every opaque silhouette inside the padding.
+ */
+export function clusterFactors(
+  points: FigurePoint[],
+  width: number,
+  height: number,
+  padding = 28,
+): { size: number; spread: number } {
+  if (points.length === 0 || width < 2 || height < 2) return { size: 1, spread: 1 };
+  const cx = points.reduce((sum, point) => sum + point.x, 0) / points.length;
+  const cy = points.reduce((sum, point) => sum + point.y, 0) / points.length;
+  const place = (size: number, spread: number): FigurePoint[] =>
+    points.map((point) => ({
+      ...point,
+      x: cx + (point.x - cx) * spread,
+      y: cy + (point.y - cy) * spread,
+      scale: point.scale * size,
+    }));
+  const fits = (size: number, spread: number) => {
+    const box = unionBounds(place(size, spread));
+    return box.w <= width - padding * 2 && box.h <= height - padding * 2;
+  };
+  let best = { size: 0.55, spread: 0.55 };
+  for (let step = 0; step <= 40; step += 1) {
+    const size = 0.55 + step * 0.12;
+    const minSpread = Math.max(0.12, size * 0.16);
+    if (minSpread > 3.6 || !fits(size, minSpread)) break;
+    let lo = minSpread;
+    let hi = 3.6;
+    for (let i = 0; i < 14; i += 1) {
+      const mid = (lo + hi) / 2;
+      if (fits(size, mid)) lo = mid;
+      else hi = mid;
+    }
+    best = { size, spread: lo };
+  }
+  return best;
+}
+
+/** Place the projected cluster so the equipment fills this stage without clipping. */
+export function fitFigures(points: FigurePoint[], width: number, height: number, padding = 28): FigurePoint[] {
+  if (points.length === 0 || width < 2 || height < 2) return points;
+  const { size, spread } = clusterFactors(points, width, height, padding);
+  const cx = points.reduce((sum, point) => sum + point.x, 0) / points.length;
+  const cy = points.reduce((sum, point) => sum + point.y, 0) / points.length;
+  const placed = points.map((point) => ({
+    ...point,
+    x: cx + (point.x - cx) * spread,
+    y: cy + (point.y - cy) * spread,
+    scale: point.scale * size,
+  }));
+  const box = unionBounds(placed);
+  const dx = (width - box.left - box.right) / 2;
+  const dy = (height - box.top - box.bottom) / 2;
+  return placed.map((point) => ({ ...point, x: point.x + dx, y: point.y + dy }));
+}
+
+/** Dolly the shared camera until the modules fill the view and stay inside it. */
+export function framedCamera(progress: number, aspect: number, tighten = 1): CameraPose {
+  const base = bayCamera(progress);
+  const pose = assemblyPose(progress);
+  const ids = CATEGORY_IDS;
+  const cx = ids.reduce((sum, id) => sum + pose[id].x, 0) / ids.length;
+  const cy = ids.reduce((sum, id) => sum + pose[id].y, 0) / ids.length;
+  const cz = ids.reduce((sum, id) => sum + pose[id].z, 0) / ids.length;
+  for (const id of ids) {
+    pose[id] = {
+      ...pose[id],
+      x: cx + (pose[id].x - cx) * tighten,
+      y: cy + (pose[id].y - cy) * tighten,
+      z: cz + (pose[id].z - cz) * tighten,
+    };
+  }
+  const dx = base.x - base.tx;
+  const dy = base.y - base.ty;
+  const dz = base.z - base.tz;
+  const length = Math.hypot(dx, dy, dz) || 1;
+  const dir = { x: dx / length, y: dy / length, z: dz / length };
+  const safeAspect = Math.max(0.4, aspect);
+  const fits = (distance: number) => {
+    const camera: CameraPose = {
+      x: base.tx + dir.x * distance,
+      y: base.ty + dir.y * distance,
+      z: base.tz + dir.z * distance,
+      tx: base.tx,
+      ty: base.ty,
+      tz: base.tz,
+    };
+    const width = safeAspect * 100;
+    for (const id of CATEGORY_IDS) {
+      const part = pose[id];
+      const samples = [
+        part,
+        { ...part, x: part.x - 0.58 },
+        { ...part, x: part.x + 0.58 },
+        { ...part, y: part.y + 0.42 },
+      ];
+      for (const sample of samples) {
+        const point = projectPart(sample, camera, width, 100);
+        const ndcX = (point.x / width) * 2 - 1;
+        const ndcY = 1 - (point.y / 100) * 2;
+        if (Math.abs(ndcX) > 0.9 || ndcY > 0.88 || ndcY < -0.9) return false;
+      }
+    }
+    return true;
+  };
+  let near = length * 0.38;
+  let far = length * 2.4;
+  if (!fits(far)) return { ...base, x: base.tx + dir.x * far, y: base.ty + dir.y * far, z: base.tz + dir.z * far };
+  if (!fits(near)) {
+    for (let step = 0; step < 16; step += 1) {
+      const mid = (near + far) / 2;
+      if (fits(mid)) far = mid;
+      else near = mid;
+    }
+    near = far;
+  }
+  return {
+    x: base.tx + dir.x * near,
+    y: base.ty + dir.y * near,
+    z: base.tz + dir.z * near,
+    tx: base.tx,
+    ty: base.ty,
+    tz: base.tz,
   };
 }

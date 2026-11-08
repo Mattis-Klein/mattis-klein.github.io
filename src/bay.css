@@ -8,8 +8,8 @@
 
 .bay-stage {
   position: relative;
-  height: min(70vw, 520px);
-  min-height: 300px;
+  height: min(104vw, 72vh);
+  min-height: 440px;
   background: #f4f7fb;
   overflow: hidden;
 }

@@ -1,7 +1,8 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import type { CategoryId } from "../content";
-import { assemblyPose, bayCamera, plinthScale, type PartId } from "../lib/bay";
+import { assemblyPose, bayCamera, clusterFactors, framedCamera, projectPart, plinthScale, type PartId } from "../lib/bay";
+import { CATEGORY_IDS } from "../content";
 import { buildAssembly } from "./buildAssembly";
 
 type AssemblyCanvasProps = {
@@ -17,7 +18,12 @@ type Props = AssemblyCanvasProps & {
   handleRef: { current: AssemblyHandle | null };
 };
 
-function applyPose(parts: Record<PartId, THREE.Object3D>, progress: number, focus: CategoryId | null): void {
+function applyPose(
+  parts: Record<PartId, THREE.Object3D>,
+  progress: number,
+  focus: CategoryId | null,
+  tighten = 1,
+): void {
   const pose = assemblyPose(progress);
   const scales = plinthScale(progress);
   if (focus && progress > 0.4 && progress < 0.64) {
@@ -29,9 +35,18 @@ function applyPose(parts: Record<PartId, THREE.Object3D>, progress: number, focu
       ry: pose[focus].ry * (1 - 0.65 * weight),
     };
   }
+  const ids = CATEGORY_IDS;
+  const cx = ids.reduce((sum, id) => sum + pose[id].x, 0) / ids.length;
+  const cy = ids.reduce((sum, id) => sum + pose[id].y, 0) / ids.length;
+  const cz = ids.reduce((sum, id) => sum + pose[id].z, 0) / ids.length;
   for (const [id, object] of Object.entries(parts) as [PartId, THREE.Object3D][]) {
     const next = pose[id];
-    object.position.set(next.x, next.y, next.z);
+    const pulled = ids.includes(id as CategoryId);
+    object.position.set(
+      pulled ? cx + (next.x - cx) * tighten : next.x,
+      pulled ? cy + (next.y - cy) * tighten : next.y,
+      pulled ? cz + (next.z - cz) * tighten : next.z,
+    );
     object.rotation.set(next.rx, next.ry, next.rz);
   }
   parts.plinthA.scale.setScalar(scales.a);
@@ -98,8 +113,17 @@ export function AssemblyCanvas({ reduced, onStatus, handleRef }: Props) {
       const intro = reduced ? 1 : Math.min(1, (now - started) / 1100);
       const eased = intro * intro * (3 - 2 * intro);
       const live = progress > 0.001 ? 1 : eased;
-      applyPose(parts, progress * live + 0.2 * (1 - live), progress > 0.001 ? focus : null);
-      const cam = bayCamera(progress * live);
+      const shown = progress * live;
+      const width = parent.clientWidth || 1;
+      const height = parent.clientHeight || 1;
+      const raw = CATEGORY_IDS.map((id) => ({
+        id,
+        ...projectPart(assemblyPose(shown)[id], bayCamera(shown), width, height),
+      }));
+      const factors = clusterFactors(raw, width, height);
+      const tighten = factors.spread / Math.max(0.2, factors.size);
+      applyPose(parts, shown + 0.2 * (1 - live), progress > 0.001 ? focus : null, tighten);
+      const cam = framedCamera(shown, camera.aspect, tighten);
       camera.position.set(cam.x, cam.y, cam.z);
       camera.lookAt(cam.tx, cam.ty, cam.tz);
       renderer.render(scene, camera);
