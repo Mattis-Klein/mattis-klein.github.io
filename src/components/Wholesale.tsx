@@ -1,6 +1,6 @@
 import { categories } from "../content";
 import { ArrowIcon } from "./Icons";
-import { ModuleMark } from "./ModuleMark";
+import { SculptForm } from "./SculptForm";
 
 type WholesaleProps = {
   onInquire: () => void;
@@ -53,7 +53,7 @@ export function Wholesale({ onInquire }: WholesaleProps) {
             <div className="channel-row" aria-hidden="true">
               {categories.map((category) => (
                 <div key={category.id} className="channel-icon">
-                  <ModuleMark id={category.id} variant="flat" />
+                  <SculptForm id={category.id} />
                 </div>
               ))}
             </div>
@@ -66,7 +66,7 @@ export function Wholesale({ onInquire }: WholesaleProps) {
             <div className="channel-row" aria-hidden="true">
               {categories.map((category) => (
                 <div key={category.id} className="channel-icon">
-                  <ModuleMark id={category.id} variant="flat" />
+                  <SculptForm id={category.id} />
                 </div>
               ))}
             </div>

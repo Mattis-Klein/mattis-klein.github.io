@@ -29,7 +29,7 @@ export const categories: readonly Category[] = [
       "Security cameras and surveillance equipment",
       "NVRs and video recording",
     ],
-    note: "MHM Global sells and distributes this equipment. Installation is not part of the offer.",
+    note: "Sold as equipment, at retail and wholesale.",
     point: "Cameras, NVRs, and video recording equipment.",
   },
   {
@@ -39,7 +39,7 @@ export const categories: readonly Category[] = [
     summary:
       "Routers and networking equipment that keep rooms, floors, and buildings online.",
     supplies: ["Routers", "Networking equipment for homes and businesses"],
-    note: "Supplied as product. MHM Global does not install or manufacture networking gear.",
+    note: "Sold as equipment, at retail and wholesale.",
     point: "Routers and networking equipment for homes and businesses.",
   },
   {
@@ -49,7 +49,7 @@ export const categories: readonly Category[] = [
     summary:
       "Thermostats and smart-home devices for everyday control in a residence or smaller space.",
     supplies: ["Thermostats", "Smart-home devices"],
-    note: "Retail and wholesale supply. Setup and installation are outside this role.",
+    note: "One group in a wider range of low-voltage equipment.",
     point: "Thermostats and smart-home devices — one part of the wider range.",
   },
   {
@@ -59,7 +59,7 @@ export const categories: readonly Category[] = [
     summary:
       "Electronic locks, video doorbells, and intercoms for entries at homes, businesses, and buildings.",
     supplies: ["Electronic locks and access control", "Video doorbells", "Intercoms"],
-    note: "MHM Global distributes the equipment. It does not provide security installation.",
+    note: "Sold as equipment, at retail and wholesale.",
     point: "Electronic locks, video doorbells, and intercoms.",
   },
   {
@@ -68,7 +68,7 @@ export const categories: readonly Category[] = [
     title: "Life Safety",
     summary: "Smoke detectors and related safety devices for occupied spaces.",
     supplies: ["Smoke detectors", "Safety devices"],
-    note: "Product supply only. This is not a life-safety installation service.",
+    note: "Sold as equipment, at retail and wholesale.",
     point: "Smoke detectors and related safety devices.",
   },
 ];

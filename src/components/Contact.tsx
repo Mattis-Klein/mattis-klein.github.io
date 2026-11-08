@@ -51,6 +51,9 @@ export function Contact({ inquiryType, setInquiryType, regarding, setRegarding }
 
   return (
     <section className="section" id="contact" aria-labelledby="contact-title" data-scrub tabIndex={-1}>
+      <div className="contact-arrive" aria-hidden="true">
+        <span />
+      </div>
       <div className="contact-grid">
         <div className="contact-sticky">
           <div className="contact-copy">

@@ -1,7 +1,4 @@
-import { categories } from "../content";
-import { LATTICE } from "../lib/lattice";
 import { LogoMark } from "./Logo";
-import { ModuleMark } from "./ModuleMark";
 
 const points = [
   {
@@ -58,19 +55,6 @@ export function About() {
             </div>
           ))}
         </dl>
-      </div>
-      <div className="range-strip" aria-hidden="true">
-        <span className="range-strip-line" />
-        {[...LATTICE.modules].sort((a, b) => a.index.localeCompare(b.index)).map((mod, index) => {
-          const category = categories.find((item) => item.id === mod.id);
-          return (
-            <div key={mod.id} className="range-strip-item" style={{ ["--i" as string]: index }}>
-              <ModuleMark id={mod.id} variant="flat" />
-              <span className="range-strip-index">{mod.index}</span>
-              <span>{category?.title}</span>
-            </div>
-          );
-        })}
       </div>
     </section>
   );

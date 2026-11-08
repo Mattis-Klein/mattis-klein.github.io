@@ -65,10 +65,10 @@ h2,
 }
 
 h1 {
-  font-size: clamp(2.45rem, 5.5vw, 4.85rem);
-  max-width: 12ch;
-  font-weight: 700;
-  line-height: 1.02;
+  font-size: clamp(2.55rem, 5.15vw, 5.45rem);
+  max-width: none;
+  font-weight: 720;
+  line-height: 0.96;
 }
 
 h2 {
@@ -1397,8 +1397,14 @@ textarea[aria-invalid="true"] {
     display: contents;
   }
 
-  .hero-actions {
+  .sculpture {
     order: 1;
+  }
+
+  .hero-actions,
+  .lede,
+  .hero-meta {
+    order: 3;
   }
 
   .sheet {
@@ -1554,7 +1560,7 @@ textarea[aria-invalid="true"] {
   }
 
   h1 {
-    font-size: clamp(2.2rem, 9vw, 3.25rem);
+    font-size: clamp(2.35rem, 10.5vw, 3.35rem);
   }
 
   .range-strip {
@@ -1660,4 +1666,290 @@ textarea[aria-invalid="true"] {
 
 body.nav-open {
   overflow: hidden;
+}
+
+main {
+  position: relative;
+}
+
+.hero-copy {
+  position: relative;
+  z-index: 4;
+}
+
+.sculpture {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  min-height: clamp(380px, 48vw, 600px);
+  overflow: hidden;
+}
+
+.sculpture-pieces {
+  position: absolute;
+  inset: 0;
+}
+
+.sculpture-ground {
+  position: absolute;
+  left: 12%;
+  right: 8%;
+  bottom: 14%;
+  height: 22%;
+  background: radial-gradient(ellipse at center, rgba(20, 43, 68, 0.09), transparent 68%);
+  pointer-events: none;
+}
+
+.sculpt-piece {
+  position: absolute;
+  width: clamp(128px, 36%, 230px);
+  transform: translate(-50%, -50%)
+    translate(calc(var(--ox) * var(--spread, 0) * 12px), calc(var(--oy) * var(--spread, 0) * 10px));
+}
+
+.sculpt {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.category-stage {
+  display: grid;
+  grid-template-columns: minmax(230px, 300px) minmax(0, 1fr);
+  gap: clamp(20px, 4vw, 56px);
+  align-items: center;
+}
+
+.cat-tabs {
+  display: grid;
+  gap: 12px;
+}
+
+.cat-tab {
+  display: grid;
+  grid-template-columns: 68px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+  min-height: 76px;
+  padding: 6px 10px;
+  border: 0;
+  border-left: 2px solid transparent;
+  background: transparent;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+.cat-tab[aria-selected="true"] {
+  border-left-color: var(--blue);
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.cat-tab-copy {
+  display: grid;
+  gap: 2px;
+  font-family: var(--display);
+  font-size: 1.05rem;
+  font-weight: 650;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+}
+
+.cat-anchor {
+  display: block;
+  width: 68px;
+  height: 58px;
+  overflow: hidden;
+}
+
+.cat-anchor .sculpt {
+  width: 100%;
+  height: 100%;
+}
+
+.cat-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(220px, 0.95fr);
+  gap: clamp(16px, 3vw, 36px);
+  align-items: center;
+  min-width: 0;
+}
+
+.stage-art {
+  min-height: 340px;
+  display: grid;
+  place-items: center;
+}
+
+.stage-art .sculpt {
+  width: min(100%, 440px);
+}
+
+.stage-copy {
+  display: grid;
+  gap: 12px;
+  justify-items: start;
+}
+
+.stage-copy p,
+.stack-panel p {
+  color: var(--muted);
+}
+
+.stage-copy ul,
+.stack-panel ul {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--ink);
+}
+
+.stack-panel {
+  display: grid;
+  gap: 8px;
+  padding: 12px 0 36px;
+  border-bottom: 1px solid var(--line);
+}
+
+.stack-art {
+  height: 230px;
+  display: grid;
+  place-items: center;
+}
+
+.stack-art .sculpt {
+  width: min(100%, 280px);
+}
+
+.page-rail {
+  position: absolute;
+  left: max(8px, calc((100% - 1260px) / 2));
+  top: 46%;
+  bottom: 10%;
+  width: 2px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.page-rail-line,
+.contact-arrive span {
+  display: block;
+  background: var(--blue);
+  transform-origin: top center;
+}
+
+.page-rail-line {
+  width: 2px;
+  height: 100%;
+  transform: scaleY(var(--rail, 0));
+}
+
+.contact-arrive {
+  width: min(200px, 42%);
+  height: 2px;
+  margin-bottom: 28px;
+}
+
+.contact-arrive span {
+  width: 100%;
+  height: 2px;
+  transform: scaleX(var(--rail, 0));
+  transform-origin: left center;
+}
+
+.channels {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+}
+
+.channel-icon {
+  border: 0;
+  background: transparent;
+  min-height: 0;
+}
+
+.channel-icon .sculpt {
+  width: min(76px, 100%);
+  height: auto;
+}
+
+.flight-layer {
+  z-index: 2;
+}
+
+@media (max-width: 800px) {
+  .sculpture {
+    flex: 0 0 auto;
+    align-self: stretch;
+    width: 100%;
+    min-height: 250px;
+  }
+}
+
+@media (max-width: 1100px) {
+  .cat-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .stage-art {
+    min-height: 260px;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .sculpt-piece {
+    transform: translate(-50%, -50%)
+      translate(
+        calc(var(--px, 0) * var(--depth) * 9px + var(--ox) * var(--spread, 0) * 12px),
+        calc(var(--py, 0) * var(--depth) * 7px + var(--oy) * var(--spread, 0) * 10px)
+      );
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .js .sculpt-assemble {
+    animation: assemble 0.82s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: var(--delay, 0s);
+  }
+
+  .js .hero h1 .line > span {
+    animation: mask-rise 0.78s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .js .cat-panel {
+    animation: stage-in 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+}
+
+@keyframes assemble {
+  from {
+    transform: translate3d(calc(var(--ox) * -26px), calc(var(--oy) * -18px), 0) scale(0.84);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes mask-rise {
+  from {
+    clip-path: inset(22% 0 0 0);
+    transform: translateY(10%);
+  }
+  to {
+    clip-path: inset(0);
+    transform: none;
+  }
+}
+
+@keyframes stage-in {
+  from {
+    opacity: 0.45;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }

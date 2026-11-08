@@ -6,6 +6,7 @@ import { Footer } from "./components/Footer";
 import { Hero } from "./components/Hero";
 import { ModuleFlight } from "./components/ModuleFlight";
 import { Nav } from "./components/Nav";
+import { PageRail } from "./components/PageRail";
 import { Wholesale } from "./components/Wholesale";
 import type { CategoryId } from "./content";
 import { useStoryMotion } from "./hooks/useStoryMotion";
@@ -16,7 +17,7 @@ export function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [inquiryType, setInquiryType] = useState<InquiryKind | "">("");
   const [regarding, setRegarding] = useState("");
-  const [openCategory, setOpenCategory] = useState<CategoryId | null>(null);
+  const [openCategory, setOpenCategory] = useState<CategoryId>("surveillance");
   const storyRef = useRef<HTMLDivElement>(null);
   useStoryMotion(storyRef);
 
@@ -44,15 +45,12 @@ export function App() {
       <Nav open={menuOpen} setOpen={setMenuOpen} onInquire={() => inquire("business")} />
       <div inert={menuOpen ? true : undefined}>
         <main id="content" tabIndex={-1}>
+          <PageRail />
           <div className="story-scope" ref={storyRef}>
-            <Hero
-              onWholesale={() => inquire("wholesale")}
-              onShowCategory={showCategory}
-              onInquire={(title) => inquire("business", title)}
-            />
+            <Hero onWholesale={() => inquire("wholesale")} />
             <Categories
               openId={openCategory}
-              onToggle={(id) => setOpenCategory((current) => (current === id ? null : id))}
+              onSelect={setOpenCategory}
               onInquire={(title) => inquire("business", title)}
             />
             <ModuleFlight />

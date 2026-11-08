@@ -1,5 +1,5 @@
 import { LATTICE } from "../lib/lattice";
-import { ModuleMark } from "./ModuleMark";
+import { SculptForm } from "./SculptForm";
 
 export function ModuleFlight() {
   return (
@@ -11,12 +11,7 @@ export function ModuleFlight() {
       </svg>
       {LATTICE.modules.map((mod) => (
         <div key={mod.id} className="flight-module" data-flight={mod.id}>
-          <div data-iso>
-            <ModuleMark id={mod.id} variant="iso" />
-          </div>
-          <div data-flat>
-            <ModuleMark id={mod.id} variant="flat" />
-          </div>
+          <SculptForm id={mod.id} />
         </div>
       ))}
     </div>

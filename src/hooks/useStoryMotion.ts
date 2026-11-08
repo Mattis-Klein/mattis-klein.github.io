@@ -1,6 +1,7 @@
 import { useEffect, useState, type RefObject } from "react";
 import { CATEGORY_IDS } from "../content";
 import { FLIGHT_SIZE, LATTICE } from "../lib/lattice";
+import { railProgress } from "../lib/categoryStage";
 import {
   flightArc,
   flightLayerOpacity,
@@ -19,18 +20,13 @@ function resetMotion(scope: HTMLElement) {
     node.style.setProperty("--scrub", "1");
   });
   const art = document.querySelector<HTMLElement>(".lattice-art");
-  const index = document.querySelector<HTMLElement>(".range-index");
   const flight = document.querySelector<HTMLElement>(".flight-layer");
   const stage = document.getElementById("supply-stage");
   if (art) art.style.opacity = "1";
-  if (index) {
-    index.style.opacity = "1";
-    index.style.pointerEvents = "";
-  }
   stage?.style.setProperty("--spread", "0");
   stage?.style.setProperty("--px", "0");
   stage?.style.setProperty("--py", "0");
-  document.querySelector(".sheet")?.classList.remove("is-dim");
+  document.documentElement.style.setProperty("--rail", "1");
   if (flight) {
     flight.style.visibility = "hidden";
     flight.style.opacity = "0";
@@ -58,7 +54,7 @@ export function useStoryMotion(scopeRef: RefObject<HTMLElement | null>) {
     }
 
     const fine = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
-    const compactQuery = window.matchMedia("(max-width: 720px)");
+    const compactQuery = window.matchMedia("(max-width: 800px)");
     const raf = { current: 0 };
     const listening = { current: false };
 
@@ -73,9 +69,14 @@ export function useStoryMotion(scopeRef: RefObject<HTMLElement | null>) {
       const stage = document.getElementById("supply-stage");
       const grid = document.getElementById("category-grid");
       const art = document.querySelector<HTMLElement>(".lattice-art");
-      const index = document.querySelector<HTMLElement>(".range-index");
       const flight = document.querySelector<HTMLElement>(".flight-layer");
-      const sheet = document.querySelector(".sheet");
+      const hero = document.querySelector(".hero");
+      const contact = document.getElementById("contact");
+      if (hero && contact) {
+        const railStart = hero.getBoundingClientRect().top + window.scrollY + hero.getBoundingClientRect().height * 0.35;
+        const railEnd = contact.getBoundingClientRect().top + window.scrollY + 48;
+        document.documentElement.style.setProperty("--rail", railProgress(window.scrollY, railStart, railEnd).toFixed(4));
+      }
       if (!stage || !grid || !art || !flight) return;
 
       const gridTop = grid.getBoundingClientRect().top + window.scrollY;
@@ -88,14 +89,6 @@ export function useStoryMotion(scopeRef: RefObject<HTMLElement | null>) {
 
       const dim = compact ? 1 : staticOpacity(progress);
       art.style.opacity = String(dim);
-      if (index && !compact) {
-        index.style.opacity = String(dim);
-        index.style.pointerEvents = dim < 0.25 ? "none" : "";
-      } else if (index) {
-        index.style.opacity = "1";
-        index.style.pointerEvents = "";
-      }
-      sheet?.classList.toggle("is-dim", !compact && dim < 0.25);
 
       const slots = [...document.querySelectorAll<HTMLElement>("[data-module-slot]")];
 
@@ -111,22 +104,25 @@ export function useStoryMotion(scopeRef: RefObject<HTMLElement | null>) {
         const id = slot.dataset.moduleSlot;
         if (id) slotRects.set(id, slot.getBoundingClientRect());
       });
-      const joint = {
-        x: stageRect.left + (LATTICE.joint.x / 100) * stageRect.width,
-        y: stageRect.top + (LATTICE.joint.y / 100) * stageRect.height,
-      };
-
       flight.querySelectorAll<HTMLElement>("[data-flight]").forEach((node) => {
         const id = node.dataset.flight;
         if (!id) return;
         const spec = LATTICE.modules.find((item) => item.id === id);
         const slotRect = slotRects.get(id);
+        const piece = document.querySelector<HTMLElement>(`[data-piece="${id}"]`);
         if (!spec || !slotRect) return;
-        const from = {
-          x: stageRect.left + (spec.x / 100) * stageRect.width,
-          y: stageRect.top + (spec.y / 100) * stageRect.height,
-          s: (stageRect.width * spec.size) / LATTICE.width / FLIGHT_SIZE,
-        };
+        const pieceRect = piece?.getBoundingClientRect();
+        const from = pieceRect && pieceRect.width > 0
+          ? {
+              x: pieceRect.left + pieceRect.width / 2,
+              y: pieceRect.top + pieceRect.height / 2,
+              s: pieceRect.width / FLIGHT_SIZE,
+            }
+          : {
+              x: stageRect.left + (spec.x / 100) * stageRect.width,
+              y: stageRect.top + (spec.y / 100) * stageRect.height,
+              s: (stageRect.width * spec.size) / LATTICE.width / FLIGHT_SIZE,
+            };
         const to = {
           x: slotRect.left + slotRect.width / 2,
           y: slotRect.top + slotRect.height / 2,
@@ -137,18 +133,6 @@ export function useStoryMotion(scopeRef: RefObject<HTMLElement | null>) {
         const pose = mixPose(from, to, t);
         const arc = flightArc(t, compact ? 0 : 22);
         node.style.transform = `translate3d(${pose.x}px, ${pose.y + arc}px, 0) translate(-50%, -50%) scale(${pose.s})`;
-        const iso = node.querySelector<HTMLElement>("[data-iso]");
-        const flat = node.querySelector<HTMLElement>("[data-flat]");
-        if (iso) iso.style.opacity = String(1 - t);
-        if (flat) flat.style.opacity = String(t);
-        const route = flight.querySelector<SVGLineElement>(`[data-route="${id}"]`);
-        if (route) {
-          route.setAttribute("x1", joint.x.toFixed(1));
-          route.setAttribute("y1", joint.y.toFixed(1));
-          route.setAttribute("x2", pose.x.toFixed(1));
-          route.setAttribute("y2", (pose.y + arc).toFixed(1));
-          route.style.opacity = String(Math.max(0, 1 - t));
-        }
       });
     };
 
