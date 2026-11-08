@@ -5,18 +5,20 @@ export function reducedMotion(): boolean {
 }
 
 const SEQUENCE_END: Record<string, string> = {
-  categories: "field",
-  wholesale: "matrix",
+  categories: "monument",
+  "home-story": "monument",
+  "category-surveillance": "monument",
+  wholesale: "divide",
 };
 
 export function scrollToId(id: string): void {
   const behavior = reducedMotion() ? "auto" : "smooth";
   const wide = window.matchMedia("(min-width: 900px)").matches;
-  if (!reducedMotion() && (wide || id === "wholesale")) {
+  if (!reducedMotion() && wide) {
     const name = SEQUENCE_END[id];
     const trigger = name ? ScrollTrigger.getById(name) : undefined;
     if (trigger) {
-      window.scrollTo({ top: Math.max(0, trigger.end - 6), behavior });
+      window.scrollTo({ top: Math.max(0, trigger.end - 8), behavior });
       return;
     }
   }

@@ -1,23 +1,20 @@
 import { useState } from "react";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { About } from "./components/About";
-import { Categories } from "./components/Categories";
 import { Contact } from "./components/Contact";
-import { FieldSequence } from "./components/FieldSequence";
+import { DivideSequence } from "./components/DivideSequence";
 import { Footer } from "./components/Footer";
-import { MatrixSequence } from "./components/MatrixSequence";
+import { MonumentStory } from "./components/MonumentStory";
 import { Nav } from "./components/Nav";
-import type { CategoryId } from "./content";
-import { useWide } from "./hooks/useWide";
+import { RangeChapter } from "./components/RangeChapter";
+import { categories, type CategoryId } from "./content";
 import type { InquiryKind } from "./lib/inquiry";
-import { reducedMotion, scrollToId } from "./lib/motion";
+import { scrollToId } from "./lib/motion";
 
 export function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [inquiryType, setInquiryType] = useState<InquiryKind | "">("");
   const [regarding, setRegarding] = useState("");
-  const [openCategory, setOpenCategory] = useState<CategoryId>("surveillance");
-  const wide = useWide();
+  const [, setOpenCategory] = useState<CategoryId>("surveillance");
 
   function inquire(type: InquiryKind, about = "") {
     setInquiryType(type);
@@ -32,18 +29,7 @@ export function App() {
   function showCategory(id: CategoryId) {
     setOpenCategory(id);
     setMenuOpen(false);
-    if (wide && !reducedMotion()) {
-      const trigger = ScrollTrigger.getById("field");
-      if (trigger) {
-        window.scrollTo({
-          top: Math.max(0, trigger.end - 6),
-          behavior: reducedMotion() ? "auto" : "smooth",
-        });
-        window.setTimeout(() => document.getElementById(`tab-${id}`)?.focus(), 0);
-        return;
-      }
-    }
-    scrollToId(`category-${id}`);
+    scrollToId(id === "surveillance" ? "categories" : `category-${id}`);
   }
 
   return (
@@ -54,23 +40,19 @@ export function App() {
       <Nav open={menuOpen} setOpen={setMenuOpen} onInquire={() => inquire("business")} />
       <div inert={menuOpen ? true : undefined}>
         <main id="content" tabIndex={-1}>
-          <FieldSequence
-            wide={wide}
-            openId={openCategory}
-            onSelect={setOpenCategory}
+          <MonumentStory
             onInquire={(title) => inquire("business", title)}
             onWholesale={() => inquire("wholesale")}
           />
-          {wide ? null : (
-            <Categories
-              mode="stack"
-              openId={openCategory}
-              onSelect={setOpenCategory}
+          {categories.slice(1).map((category) => (
+            <RangeChapter
+              key={category.id}
+              category={category}
               onInquire={(title) => inquire("business", title)}
             />
-          )}
+          ))}
+          <DivideSequence onInquire={() => inquire("wholesale")} />
           <About />
-          <MatrixSequence onInquire={() => inquire("wholesale")} />
           <Contact
             inquiryType={inquiryType}
             setInquiryType={setInquiryType}
