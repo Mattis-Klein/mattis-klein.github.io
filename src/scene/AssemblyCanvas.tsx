@@ -1,6 +1,5 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
-import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import type { CategoryId } from "../content";
 import { assemblyPose, bayCamera, plinthScale, type PartId } from "../lib/bay";
 import { buildAssembly } from "./buildAssembly";
@@ -64,45 +63,26 @@ export function AssemblyCanvas({ reduced, onStatus, handleRef }: Props) {
       return;
     }
 
-    const mobile = window.matchMedia("(max-width: 899px)").matches;
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, mobile ? 1.25 : 1.6));
+    renderer.setPixelRatio(1);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.12;
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.toneMapping = THREE.NoToneMapping;
 
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0xf4f7fb);
-    const pmrem = new THREE.PMREMGenerator(renderer);
-    scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.045).texture;
 
     const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 40);
-    const hemi = new THREE.HemisphereLight(0xffffff, 0xc5d4e4, 0.72);
-    const key = new THREE.DirectionalLight(0xfff6ee, 3.4);
-    key.position.set(4.2, 6.4, 3.2);
-    key.castShadow = true;
-    key.shadow.mapSize.set(mobile ? 512 : 1024, mobile ? 512 : 1024);
-    key.shadow.camera.near = 1;
-    key.shadow.camera.far = 18;
-    key.shadow.camera.left = -4;
-    key.shadow.camera.right = 4;
-    key.shadow.camera.top = 4;
-    key.shadow.camera.bottom = -4;
-    key.shadow.bias = -0.0006;
-    const fill = new THREE.DirectionalLight(0xd5e6f6, 1.15);
-    fill.position.set(-4.5, 2.4, 2.2);
-    const rim = new THREE.DirectionalLight(0x8ec8ef, 1.7);
-    rim.position.set(-1.5, 3.2, -4.2);
-    scene.add(hemi, key, fill, rim);
+    scene.add(new THREE.HemisphereLight(0xffffff, 0xc5d4e4, 1.15));
+    const key = new THREE.DirectionalLight(0xfff8f2, 1.8);
+    key.position.set(4, 6, 3);
+    const fill = new THREE.DirectionalLight(0xd7e6f4, 0.7);
+    fill.position.set(-4, 2, 2);
+    scene.add(key, fill);
 
     const floor = new THREE.Mesh(
       new THREE.PlaneGeometry(30, 30),
-      new THREE.MeshStandardMaterial({ color: 0xf7f9fc, roughness: 0.94, metalness: 0.02 }),
+      new THREE.MeshStandardMaterial({ color: 0xf7f9fc, roughness: 1, metalness: 0 }),
     );
     floor.rotation.x = -Math.PI / 2;
-    floor.position.y = -0.001;
-    floor.receiveShadow = true;
     scene.add(floor);
 
     const { root, parts } = buildAssembly();
@@ -163,6 +143,14 @@ export function AssemblyCanvas({ reduced, onStatus, handleRef }: Props) {
     };
     document.addEventListener("visibilitychange", onVisible);
     resize();
+    const sample = performance.now();
+    draw(sample);
+    if (performance.now() - sample > 40) {
+      onStatus(false);
+      life.on = false;
+      renderer.dispose();
+      return;
+    }
     frame = window.requestAnimationFrame(loop);
     onStatus(true);
 
@@ -178,7 +166,6 @@ export function AssemblyCanvas({ reduced, onStatus, handleRef }: Props) {
         mesh.geometry?.dispose?.();
       });
       renderer.dispose();
-      pmrem.dispose();
     };
   }, [handleRef, onStatus, reduced]);
 

@@ -5,6 +5,8 @@ import { copyOpacity, storyPhase, type StoryBeat } from "../lib/bay";
 import { categoryFromKey } from "../lib/categoryStage";
 import { scrollToId } from "../lib/motion";
 import type { AssemblyHandle } from "../scene/AssemblyCanvas";
+import { BayFigures } from "../scene/BayFigures";
+import { hardwareGL } from "../scene/gpu";
 
 const AssemblyCanvas = lazy(() => import("../scene/AssemblyCanvas").then((mod) => ({ default: mod.AssemblyCanvas })));
 
@@ -26,14 +28,16 @@ export function SupplyStory({ onInquire, onWholesale }: SupplyStoryProps) {
   const handleRef = useRef<AssemblyHandle | null>(null);
   const wide = useWide();
   const [reduced, setReduced] = useState(false);
-  const [ready, setReady] = useState(true);
+  const [engine, setEngine] = useState<"sprites" | "gl">(() => (hardwareGL() ? "gl" : "sprites"));
   const [focus, setFocus] = useState<CategoryId>("surveillance");
   const [beat, setBeat] = useState<StoryBeat>("assembly");
   const [pin, setPin] = useState<"start" | "fixed" | "end">("start");
   const motion = wide && !reduced;
   const selected = categoryById(focus) ?? categories[0];
 
-  const onStatus = useCallback((ok: boolean) => setReady(ok), []);
+  const onStatus = useCallback((ok: boolean) => {
+    if (!ok) setEngine("sprites");
+  }, []);
 
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -77,7 +81,7 @@ export function SupplyStory({ onInquire, onWholesale }: SupplyStoryProps) {
       window.removeEventListener("scroll", read);
       window.removeEventListener("resize", read);
     };
-  }, [focus, motion, ready]);
+  }, [focus, motion, engine]);
 
   function onTabsKey(event: KeyboardEvent<HTMLDivElement>) {
     const next = categoryFromKey(focus, event.key);
@@ -97,19 +101,12 @@ export function SupplyStory({ onInquire, onWholesale }: SupplyStoryProps) {
     >
       <div className="bay-sticky">
         <div className="bay-stage">
-          {ready ? (
-            <Suspense fallback={null}>
+          {engine === "gl" ? (
+            <Suspense fallback={<BayFigures handleRef={handleRef} />}>
               <AssemblyCanvas reduced={!motion} onStatus={onStatus} handleRef={handleRef} />
             </Suspense>
-          ) : null}
-          {ready ? null : (
-            <div className="bay-fallback" aria-hidden="true">
-              <span />
-              <span />
-              <span />
-              <span />
-              <span />
-            </div>
+          ) : (
+            <BayFigures handleRef={handleRef} />
           )}
         </div>
         <div className="bay-hero" data-live={beat === "assembly" || beat === "separate" ? "1" : "0"}>
@@ -119,9 +116,9 @@ export function SupplyStory({ onInquire, onWholesale }: SupplyStoryProps) {
           </p>
           <h1 id="hero-title">Equipment, supplied.</h1>
           <p>
-            Electronics, equipment, and supplies for homes, businesses, and buildings. Retail and wholesale.
-            MHM Global sells the equipment. It does not install it and does not manufacture it.
+            MHM Global distributes low-voltage electronics, equipment, and supplies, at retail and at wholesale.
           </p>
+          <p className="bay-caption">The forms illustrate the five groups. They are not products made by MHM Global.</p>
           <div className="bay-jump">
             {categories.map((category) => (
               <a
@@ -177,25 +174,15 @@ export function SupplyStory({ onInquire, onWholesale }: SupplyStoryProps) {
           </div>
         </div>
         <div className="bay-routes" id={motion ? "wholesale" : undefined} data-live={beat === "routes" || beat === "reroute" ? "1" : "0"} inert={beat === "routes" ? undefined : true}>
-          <div>
-            <p className="eyebrow">
-              <span className="eyebrow-mark" aria-hidden="true" />
-              Retail
-            </p>
-            <h2>For individuals</h2>
-            <p>The same equipment, bought for a home or a smaller space.</p>
-          </div>
-          <div>
-            <p className="eyebrow">
-              <span className="eyebrow-mark" aria-hidden="true" />
-              Wholesale
-            </p>
-            <h2>For businesses</h2>
-            <p>The same range, discussed directly for larger purchasing.</p>
-            <button type="button" className="btn btn-primary" onClick={onWholesale}>
-              Start a wholesale inquiry
-            </button>
-          </div>
+          <p className="eyebrow">
+            <span className="eyebrow-mark" aria-hidden="true" />
+            Two ways of buying
+          </p>
+          <h2>Retail and wholesale.</h2>
+          <p>Individuals and businesses buy from the same range. The forms divide with them. Wholesale terms are discussed directly.</p>
+          <button type="button" className="btn btn-primary" onClick={onWholesale}>
+            Start a wholesale inquiry
+          </button>
         </div>
       </div>
     </section>

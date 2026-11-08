@@ -11,6 +11,7 @@
   height: min(70vw, 520px);
   min-height: 300px;
   background: #f4f7fb;
+  overflow: hidden;
 }
 
 .bay-canvas {
@@ -61,8 +62,12 @@
 .bay-routes p,
 .routes-note p,
 .spec-intro p {
-  max-width: 42rem;
+  max-width: 36rem;
   color: var(--muted);
+}
+
+.bay-caption {
+  font-size: 0.92rem;
 }
 
 .bay-jump,
@@ -133,22 +138,71 @@
   right: 0;
 }
 
+.bay.is-motion .bay-sticky {
+  display: grid;
+  grid-template-columns: minmax(280px, 380px) minmax(0, 1fr);
+  align-items: center;
+  padding: 28px clamp(20px, 4vw, 56px) 36px;
+  gap: 8px 28px;
+}
+
 .bay.is-motion .bay-stage {
+  position: relative;
+  grid-column: 2;
+  grid-row: 1;
+  height: 100%;
+  min-height: 0;
+}
+
+.bay-figures,
+.bay-canvas {
   position: absolute;
   inset: 0;
-  height: auto;
-  min-height: 0;
+}
+
+.bay-figure,
+.bay-plinth {
+  position: absolute;
+  left: 0;
+  top: 0;
+  will-change: transform;
+}
+
+.bay-figure {
+  width: 240px;
+  height: 240px;
+}
+
+.bay-figure img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.bay-plinth {
+  width: 300px;
+  height: 78px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.95), rgba(214, 226, 236, 0.45) 58%, rgba(214, 226, 236, 0) 74%);
+  box-shadow: 0 12px 22px rgba(20, 43, 68, 0.08);
 }
 
 .bay.is-motion .bay-hero,
 .bay.is-motion .bay-panel,
 .bay.is-motion .bay-routes {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  padding-bottom: 28px;
-  background: linear-gradient(180deg, rgba(244, 247, 251, 0), #f4f7fb 28%);
+  position: relative;
+  grid-column: 1;
+  grid-row: 1;
+  align-self: center;
+  width: auto;
+  min-width: 0;
+  margin: 0;
+  padding: 0 8px 0 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  z-index: 2;
 }
 
 .bay.is-motion .bay-hero {
@@ -162,17 +216,8 @@
 }
 
 .bay.is-motion .bay-panel {
-  width: min(760px, calc(100% - 48px));
-  left: clamp(18px, 4vw, 48px);
-  right: auto;
-  top: auto;
-  bottom: 16px;
-  padding: 18px 20px 16px;
-  background: rgba(255, 255, 255, 0.96);
-  border: 1px solid rgba(220, 232, 241, 0.9);
-  box-shadow: 0 18px 40px rgba(20, 43, 68, 0.08);
   opacity: var(--panel-o, 0);
-  transform: translateY(calc((1 - var(--panel-o, 0)) * 24px));
+  transform: translateY(calc((1 - var(--panel-o, 0)) * 16px));
   pointer-events: none;
 }
 
@@ -182,11 +227,8 @@
 }
 
 .bay.is-motion .bay-routes {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
   opacity: var(--routes-o, 0);
-  transform: translateY(calc((1 - var(--routes-o, 0)) * 20px));
+  transform: translateY(calc((1 - var(--routes-o, 0)) * 16px));
   pointer-events: none;
 }
 

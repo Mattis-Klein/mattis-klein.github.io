@@ -24,10 +24,21 @@ describe("supply bay", () => {
       const moved = Math.hypot(stations[id].x - hero[id].x, stations[id].y - hero[id].y, stations[id].z - hero[id].z);
       expect(moved).toBeGreaterThan(0.35);
     }
-    expect(routes.surveillance.x).toBeLessThan(-1);
-    expect(routes.access.x).toBeGreaterThan(1);
-    expect(routes.plinthA.x).toBeLessThan(0);
-    expect(routes.plinthB.x).toBeGreaterThan(0);
+    expect(routes.surveillance.x).toBeLessThan(routes.networking.x - 1);
+    expect(routes.access.x).toBeGreaterThan(routes.safety.x);
+    expect(routes.plinthA.x).toBeLessThan(routes.plinthB.x);
+  });
+
+  it("passes through different positions instead of jumping", () => {
+    const samples = [0.12, 0.2, 0.28, 0.36, 0.44].map((progress) => assemblyPose(progress).surveillance);
+    const keys = samples.map((pose) => `${pose.x.toFixed(2)}:${pose.y.toFixed(2)}`);
+    expect(new Set(keys).size).toBe(samples.length);
+    const hero = assemblyPose(0).surveillance;
+    const mid = assemblyPose(0.28).surveillance;
+    const stations = assemblyPose(0.55).surveillance;
+    expect(mid.y).toBeGreaterThan(hero.y);
+    expect(mid.y).toBeGreaterThan(stations.y);
+    expect(Math.abs(mid.ry - hero.ry)).toBeGreaterThan(0.2);
   });
 
   it("keeps the hero copy up and the routes copy for the last beat", () => {

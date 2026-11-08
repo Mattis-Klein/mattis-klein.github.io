@@ -42,38 +42,46 @@ const HERO: Record<PartId, Pose> = {
 };
 
 const STATIONS: Record<PartId, Pose> = {
-  surveillance: { x: -0.15, y: 0.1, z: 0.22, rx: 0, ry: 0.4, rz: 0 },
-  networking: { x: 0.95, y: 0.12, z: -0.08, rx: 0, ry: 0.12, rz: 0 },
-  "smart-home": { x: 1.75, y: 0.1, z: 0.16, rx: 0, ry: -0.12, rz: 0 },
-  access: { x: 2.45, y: 0.14, z: -0.02, rx: 0, ry: -0.32, rz: 0 },
-  safety: { x: 3.15, y: 0.08, z: 0.24, rx: 0, ry: -0.5, rz: 0 },
-  plinthA: { x: 1.45, y: 0, z: 0.02, rx: 0, ry: 0.08, rz: 0 },
+  surveillance: { x: 0.35, y: 0.1, z: 0.22, rx: 0, ry: 0.4, rz: 0 },
+  networking: { x: 1.35, y: 0.12, z: -0.08, rx: 0, ry: 0.12, rz: 0 },
+  "smart-home": { x: 2.2, y: 0.1, z: 0.16, rx: 0, ry: -0.12, rz: 0 },
+  access: { x: 2.95, y: 0.14, z: -0.02, rx: 0, ry: -0.32, rz: 0 },
+  safety: { x: 3.65, y: 0.08, z: 0.24, rx: 0, ry: -0.5, rz: 0 },
+  plinthA: { x: 2.0, y: 0, z: 0.02, rx: 0, ry: 0.08, rz: 0 },
   plinthB: { x: 1.45, y: -0.6, z: 0, rx: 0, ry: 0, rz: 0 },
 };
 
 const ROUTES: Record<PartId, Pose> = {
-  surveillance: { x: -1.35, y: 0.1, z: 0.28, rx: 0, ry: 0.5, rz: 0 },
-  "smart-home": { x: -0.85, y: 0.12, z: -0.15, rx: 0, ry: 0.28, rz: 0 },
-  safety: { x: -0.25, y: 0.08, z: 0.22, rx: 0, ry: 0.12, rz: 0 },
-  networking: { x: 0.85, y: 0.1, z: 0.12, rx: 0, ry: -0.28, rz: 0 },
-  access: { x: 1.55, y: 0.12, z: -0.08, rx: 0, ry: -0.48, rz: 0 },
-  plinthA: { x: -0.82, y: 0, z: 0.05, rx: 0, ry: 0.12, rz: 0 },
-  plinthB: { x: 1.2, y: 0, z: 0.02, rx: 0, ry: -0.12, rz: 0 },
+  surveillance: { x: 0.55, y: 0.1, z: 0.28, rx: 0, ry: 0.5, rz: 0 },
+  "smart-home": { x: 1.25, y: 0.12, z: -0.15, rx: 0, ry: 0.28, rz: 0 },
+  safety: { x: 1.9, y: 0.08, z: 0.22, rx: 0, ry: 0.12, rz: 0 },
+  networking: { x: 2.85, y: 0.1, z: 0.12, rx: 0, ry: -0.28, rz: 0 },
+  access: { x: 3.6, y: 0.12, z: -0.08, rx: 0, ry: -0.48, rz: 0 },
+  plinthA: { x: 1.25, y: 0, z: 0.05, rx: 0, ry: 0.12, rz: 0 },
+  plinthB: { x: 3.2, y: 0, z: 0.02, rx: 0, ry: -0.12, rz: 0 },
 };
 
-const CAM_HERO: CameraPose = { x: 0.12, y: 1.55, z: 4.55, tx: 0.08, ty: 0.38, tz: 0 };
-const CAM_STATIONS: CameraPose = { x: 1.4, y: 2.15, z: 5.7, tx: 1.45, ty: 0.02, tz: 0 };
-const CAM_ROUTES: CameraPose = { x: 0.15, y: 1.28, z: 5.35, tx: 0.15, ty: 0.22, tz: 0.05 };
+const CAM_HERO: CameraPose = { x: 0.02, y: 1.05, z: 3.05, tx: 0.02, ty: 0.5, tz: 0 };
+const CAM_STATIONS: CameraPose = { x: 2.0, y: 1.7, z: 6.1, tx: 2.0, ty: 0.22, tz: 0 };
+const CAM_ROUTES: CameraPose = { x: 2.15, y: 1.35, z: 5.35, tx: 2.15, ty: 0.28, tz: 0 };
 
 export type StoryBeat = "assembly" | "separate" | "stations" | "reroute" | "routes";
 
 export function storyPhase(progress: number): StoryBeat {
-  if (progress < 0.16) return "assembly";
-  if (progress < 0.46) return "separate";
-  if (progress < 0.62) return "stations";
-  if (progress < 0.88) return "reroute";
+  if (progress < 0.06) return "assembly";
+  if (progress < 0.52) return "separate";
+  if (progress < 0.58) return "stations";
+  if (progress < 0.94) return "reroute";
   return "routes";
 }
+
+const LIFT: Record<CategoryId, { x: number; y: number; ry: number }> = {
+  surveillance: { x: -0.35, y: 0.72, ry: 0.9 },
+  networking: { x: 0.2, y: 0.38, ry: -0.45 },
+  "smart-home": { x: 0.05, y: 0.55, ry: 0.35 },
+  access: { x: 0.28, y: 0.48, ry: -0.7 },
+  safety: { x: -0.12, y: 0.22, ry: 0.4 },
+};
 
 function clamp01(value: number): number {
   if (value <= 0) return 0;
@@ -114,20 +122,30 @@ function lerpCamera(a: CameraPose, b: CameraPose, t: number): CameraPose {
 
 export function bayWeights(progress: number): { stations: number; routes: number } {
   return {
-    stations: smooth((progress - 0.16) / 0.3),
-    routes: smooth((progress - 0.62) / 0.26),
+    stations: smooth((progress - 0.06) / 0.46),
+    routes: smooth((progress - 0.58) / 0.36),
   };
+}
+
+function bow(amount: number): number {
+  return Math.sin(clamp01(amount) * Math.PI);
 }
 
 export function assemblyPose(progress: number): Record<PartId, Pose> {
   const { stations, routes } = bayWeights(progress);
   const pose = {} as Record<PartId, Pose>;
+  const rising = bow(stations) * (1 - routes);
+  const crossing = bow(routes);
   for (const id of PARTS) {
     const mid = lerpPose(HERO[id], STATIONS[id], stations);
     const placed = lerpPose(mid, ROUTES[id], routes);
-    if (id === "plinthB") {
-      placed.y += (1 - routes) * -0.02;
+    const lift = LIFT[id as CategoryId];
+    if (lift) {
+      placed.x += lift.x * rising;
+      placed.y += lift.y * rising + 0.18 * crossing;
+      placed.ry += lift.ry * rising;
     }
+    if (id === "plinthB") placed.y += (1 - routes) * -0.02;
     pose[id] = placed;
   }
   return pose;
@@ -145,9 +163,57 @@ export function plinthScale(progress: number): { a: number; b: number } {
 }
 
 export function copyOpacity(progress: number): { hero: number; panel: number; routes: number } {
-  const hero = 1 - smooth((progress - 0.14) / 0.16);
-  const panelIn = smooth((progress - 0.34) / 0.12);
-  const panelOut = 1 - smooth((progress - 0.6) / 0.12);
-  const routes = smooth((progress - 0.7) / 0.14);
+  const hero = 1 - smooth((progress - 0.22) / 0.18);
+  const panelIn = smooth((progress - 0.32) / 0.14);
+  const panelOut = 1 - smooth((progress - 0.54) / 0.1);
+  const routes = smooth((progress - 0.66) / 0.14);
   return { hero, panel: panelIn * panelOut, routes };
+}
+
+export const YAW_STEPS = 8;
+
+export function yawIndex(ry: number): number {
+  const turn = Math.PI * 2;
+  const wrapped = ((ry % turn) + turn) % turn;
+  return Math.round(wrapped / (turn / YAW_STEPS)) % YAW_STEPS;
+}
+
+const FOV = (30 * Math.PI) / 180;
+
+export function projectPart(
+  pose: Pose,
+  camera: CameraPose,
+  width: number,
+  height: number,
+): { x: number; y: number; scale: number } {
+  const fx = camera.tx - camera.x;
+  const fy = camera.ty - camera.y;
+  const fz = camera.tz - camera.z;
+  const fl = Math.hypot(fx, fy, fz) || 1;
+  const forward = { x: fx / fl, y: fy / fl, z: fz / fl };
+  const up = { x: 0, y: 1, z: 0 };
+  const rx = forward.y * up.z - forward.z * up.y;
+  const ry = forward.z * up.x - forward.x * up.z;
+  const rz = forward.x * up.y - forward.y * up.x;
+  const rl = Math.hypot(rx, ry, rz) || 1;
+  const right = { x: rx / rl, y: ry / rl, z: rz / rl };
+  const ux = right.y * forward.z - right.z * forward.y;
+  const uy = right.z * forward.x - right.x * forward.z;
+  const uz = right.x * forward.y - right.y * forward.x;
+  const dx = pose.x - camera.x;
+  const dy = pose.y - camera.y;
+  const dz = pose.z - camera.z;
+  const cx = dx * right.x + dy * right.y + dz * right.z;
+  const cy = dx * ux + dy * uy + dz * uz;
+  const cz = dx * forward.x + dy * forward.y + dz * forward.z;
+  const depth = Math.max(0.35, cz);
+  const focal = 1 / Math.tan(FOV / 2);
+  const aspect = width / Math.max(1, height);
+  const ndcX = (cx / depth) * (focal / aspect);
+  const ndcY = (cy / depth) * focal;
+  return {
+    x: (ndcX * 0.5 + 0.5) * width,
+    y: (1 - (ndcY * 0.5 + 0.5)) * height,
+    scale: (height / 820) * (4.6 / depth),
+  };
 }
