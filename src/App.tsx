@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
 import { About } from "./components/About";
 import { Contact } from "./components/Contact";
-import { DivideSequence } from "./components/DivideSequence";
 import { Footer } from "./components/Footer";
-import { MonumentStory } from "./components/MonumentStory";
 import { Nav } from "./components/Nav";
-import { RangeChapter } from "./components/RangeChapter";
-import { categories, type CategoryId } from "./content";
+import { RangeIndex } from "./components/RangeIndex";
+import { SupplyStory } from "./components/SupplyStory";
+import type { CategoryId } from "./content";
 import type { InquiryKind } from "./lib/inquiry";
 import { scrollToId } from "./lib/motion";
 
@@ -52,7 +51,7 @@ export function App() {
   function showCategory(id: CategoryId) {
     setOpenCategory(id);
     setMenuOpen(false);
-    scrollToId(id === "surveillance" ? "categories" : `category-${id}`);
+    scrollToId(`category-${id}`);
   }
 
   return (
@@ -63,18 +62,14 @@ export function App() {
       <Nav open={menuOpen} setOpen={setMenuOpen} onInquire={() => inquire("business")} />
       <div inert={menuOpen ? true : undefined}>
         <main id="content" tabIndex={-1}>
-          <MonumentStory
+          <SupplyStory
             onInquire={(title) => inquire("business", title)}
             onWholesale={() => inquire("wholesale")}
           />
-          {categories.slice(1).map((category) => (
-            <RangeChapter
-              key={category.id}
-              category={category}
-              onInquire={(title) => inquire("business", title)}
-            />
-          ))}
-          <DivideSequence onInquire={() => inquire("wholesale")} />
+          <RangeIndex
+            onInquire={(title) => inquire("business", title)}
+            onWholesale={() => inquire("wholesale")}
+          />
           <About />
           <Contact
             inquiryType={inquiryType}
