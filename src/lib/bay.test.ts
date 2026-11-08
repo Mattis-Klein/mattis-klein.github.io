@@ -44,7 +44,13 @@ describe("supply bay", () => {
   it("keeps the hero copy up and the routes copy for the last beat", () => {
     expect(copyOpacity(0).hero).toBe(1);
     expect(copyOpacity(0).panel).toBe(0);
-    expect(copyOpacity(0.52).panel).toBeGreaterThan(0.9);
+    expect(copyOpacity(0.5).panel).toBeGreaterThan(0.9);
+    let blank = 0;
+    for (let progress = 0; progress <= 1; progress += 0.02) {
+      const opacity = copyOpacity(progress);
+      if (opacity.hero < 0.25 && opacity.panel < 0.25 && opacity.routes < 0.25) blank += 0.02;
+    }
+    expect(blank).toBeLessThan(0.1);
     expect(copyOpacity(1).routes).toBe(1);
     expect(copyOpacity(1).hero).toBe(0);
   });

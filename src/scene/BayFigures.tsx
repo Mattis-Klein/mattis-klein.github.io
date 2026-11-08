@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { CATEGORY_IDS } from "../content";
-import { assemblyPose, bayCamera, plinthScale, projectPart, yawIndex, type PartId } from "../lib/bay";
+import { assemblyPose, bayCamera, projectPart, yawBlend, type PartId } from "../lib/bay";
 import type { AssemblyHandle } from "./AssemblyCanvas";
 
 type BayFiguresProps = {
@@ -21,30 +21,33 @@ export function BayFigures({ handleRef }: BayFiguresProps) {
       const rect = root.getBoundingClientRect();
       const pose = assemblyPose(progress);
       const camera = bayCamera(progress);
-      const scales = plinthScale(progress);
-      const place = (id: PartId, scale: number, anchor: string) => {
-        const node = nodes.current[id];
-        if (!node) return;
-        const point = projectPart(pose[id], camera, rect.width, rect.height);
-        node.style.transform = `translate3d(${point.x}px, ${point.y}px, 0) translate(-50%, ${anchor}) scale(${point.scale * scale})`;
-      };
       for (const id of CATEGORY_IDS) {
-        place(id, 1, "-78%");
-        const image = nodes.current[id]?.querySelector("img");
-        if (!image) continue;
-        const yaw = String(yawIndex(pose[id].ry));
-        if (image.dataset.yaw !== yaw) {
-          image.dataset.yaw = yaw;
-          image.src = `/bay/${id}-${yaw}.webp`;
-        }
+        const node = nodes.current[id];
+        if (!node) continue;
+        const point = projectPart(pose[id], camera, rect.width, rect.height);
+        node.style.transform = `translate3d(${point.x}px, ${point.y}px, 0) translate(-50%, -78%) scale(${point.scale})`;
+        const blend = yawBlend(pose[id].ry);
+        const images = node.querySelectorAll("img");
+        const sources = [String(blend.lo), String(blend.hi)];
+        images.forEach((image, index) => {
+          if (image.dataset.yaw !== sources[index]) {
+            image.dataset.yaw = sources[index];
+            image.src = `/bay/${id}-${sources[index]}.webp`;
+          }
+          image.style.opacity = index === 0 ? String(1 - blend.mix) : String(blend.mix);
+        });
       }
-      place("plinthA", scales.a, "-50%");
-      place("plinthB", Math.max(0.02, scales.b), "-50%");
-      const hidden = nodes.current.plinthB;
-      if (hidden) hidden.style.opacity = scales.b < 0.08 ? "0" : "1";
     };
     handleRef.current = { setFrame: (progress) => apply(progress) };
     apply(0);
+    window.setTimeout(() => {
+      for (const id of CATEGORY_IDS) {
+        for (let step = 0; step < 12; step += 1) {
+          const image = new Image();
+          image.src = `/bay/${id}-${step}.webp`;
+        }
+      }
+    });
     const observer = new ResizeObserver(() => {
       apply(Number.isNaN(last) ? 0 : last, true);
     });
@@ -57,15 +60,6 @@ export function BayFigures({ handleRef }: BayFiguresProps) {
 
   return (
     <div className="bay-figures" ref={rootRef} aria-hidden="true">
-      {(["plinthA", "plinthB"] as const).map((id) => (
-        <div
-          key={id}
-          className="bay-plinth"
-          ref={(node) => {
-            nodes.current[id] = node;
-          }}
-        />
-      ))}
       {CATEGORY_IDS.map((id) => (
         <div
           key={id}
@@ -75,6 +69,7 @@ export function BayFigures({ handleRef }: BayFiguresProps) {
           }}
         >
           <img alt="" data-yaw="0" src={`/bay/${id}-0.webp`} />
+          <img alt="" data-yaw="1" src={`/bay/${id}-1.webp`} />
         </div>
       ))}
     </div>

@@ -109,16 +109,17 @@ export function SupplyStory({ onInquire, onWholesale }: SupplyStoryProps) {
             <BayFigures handleRef={handleRef} />
           )}
         </div>
+        <div className="bay-copy">
+        <p className="eyebrow bay-kicker">
+          <span className="eyebrow-mark" aria-hidden="true" />
+          {beat === "routes" || beat === "reroute" ? "Two ways of buying" : beat === "stations" ? "The range" : "Low-voltage distribution"}
+        </p>
+        <div className="bay-stack">
         <div className="bay-hero" data-live={beat === "assembly" || beat === "separate" ? "1" : "0"}>
-          <p className="eyebrow">
-            <span className="eyebrow-mark" aria-hidden="true" />
-            Low-voltage distribution
-          </p>
           <h1 id="hero-title">Equipment, supplied.</h1>
           <p>
             MHM Global distributes low-voltage electronics, equipment, and supplies, at retail and at wholesale.
           </p>
-          <p className="bay-caption">The forms illustrate the five groups. They are not products made by MHM Global.</p>
           <div className="bay-jump">
             {categories.map((category) => (
               <a
@@ -174,15 +175,13 @@ export function SupplyStory({ onInquire, onWholesale }: SupplyStoryProps) {
           </div>
         </div>
         <div className="bay-routes" id={motion ? "wholesale" : undefined} data-live={beat === "routes" || beat === "reroute" ? "1" : "0"} inert={beat === "routes" ? undefined : true}>
-          <p className="eyebrow">
-            <span className="eyebrow-mark" aria-hidden="true" />
-            Two ways of buying
-          </p>
           <h2>Retail and wholesale.</h2>
           <p>Individuals and businesses buy from the same range. The forms divide with them. Wholesale terms are discussed directly.</p>
           <button type="button" className="btn btn-primary" onClick={onWholesale}>
             Start a wholesale inquiry
           </button>
+        </div>
+        </div>
         </div>
       </div>
     </section>

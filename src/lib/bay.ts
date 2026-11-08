@@ -61,22 +61,22 @@ const ROUTES: Record<PartId, Pose> = {
   plinthB: { x: 3.2, y: 0, z: 0.02, rx: 0, ry: -0.12, rz: 0 },
 };
 
-const CAM_HERO: CameraPose = { x: 0.02, y: 1.05, z: 3.05, tx: 0.02, ty: 0.5, tz: 0 };
-const CAM_STATIONS: CameraPose = { x: 2.0, y: 1.7, z: 6.1, tx: 2.0, ty: 0.22, tz: 0 };
-const CAM_ROUTES: CameraPose = { x: 2.15, y: 1.35, z: 5.35, tx: 2.15, ty: 0.28, tz: 0 };
+const CAM_HERO: CameraPose = { x: 0.04, y: 1.2, z: 3.85, tx: 0.04, ty: 0.42, tz: 0 };
+const CAM_STATIONS: CameraPose = { x: 2.05, y: 1.85, z: 7.6, tx: 2.05, ty: 0.24, tz: 0 };
+const CAM_ROUTES: CameraPose = { x: 2.2, y: 1.5, z: 7.15, tx: 2.2, ty: 0.3, tz: 0 };
 
 export type StoryBeat = "assembly" | "separate" | "stations" | "reroute" | "routes";
 
 export function storyPhase(progress: number): StoryBeat {
-  if (progress < 0.06) return "assembly";
-  if (progress < 0.52) return "separate";
-  if (progress < 0.58) return "stations";
+  if (progress < 0.08) return "assembly";
+  if (progress < 0.34) return "separate";
+  if (progress < 0.56) return "stations";
   if (progress < 0.94) return "reroute";
   return "routes";
 }
 
 const LIFT: Record<CategoryId, { x: number; y: number; ry: number }> = {
-  surveillance: { x: -0.35, y: 0.72, ry: 0.9 },
+  surveillance: { x: -0.08, y: 0.55, ry: 0.7 },
   networking: { x: 0.2, y: 0.38, ry: -0.45 },
   "smart-home": { x: 0.05, y: 0.55, ry: 0.35 },
   access: { x: 0.28, y: 0.48, ry: -0.7 },
@@ -163,19 +163,22 @@ export function plinthScale(progress: number): { a: number; b: number } {
 }
 
 export function copyOpacity(progress: number): { hero: number; panel: number; routes: number } {
-  const hero = 1 - smooth((progress - 0.22) / 0.18);
-  const panelIn = smooth((progress - 0.32) / 0.14);
-  const panelOut = 1 - smooth((progress - 0.54) / 0.1);
-  const routes = smooth((progress - 0.66) / 0.14);
+  const hero = 1 - smooth((progress - 0.26) / 0.06);
+  const panelIn = smooth((progress - 0.33) / 0.06);
+  const panelOut = 1 - smooth((progress - 0.5) / 0.06);
+  const routes = smooth((progress - 0.57) / 0.06);
   return { hero, panel: panelIn * panelOut, routes };
 }
 
-export const YAW_STEPS = 8;
+export const YAW_STEPS = 12;
 
-export function yawIndex(ry: number): number {
+export function yawBlend(ry: number): { lo: number; hi: number; mix: number } {
   const turn = Math.PI * 2;
   const wrapped = ((ry % turn) + turn) % turn;
-  return Math.round(wrapped / (turn / YAW_STEPS)) % YAW_STEPS;
+  const exact = wrapped / (turn / YAW_STEPS);
+  const lo = Math.floor(exact) % YAW_STEPS;
+  const mix = exact - Math.floor(exact);
+  return { lo, hi: (lo + 1) % YAW_STEPS, mix };
 }
 
 const FOV = (30 * Math.PI) / 180;
@@ -208,12 +211,12 @@ export function projectPart(
   const cz = dx * forward.x + dy * forward.y + dz * forward.z;
   const depth = Math.max(0.35, cz);
   const focal = 1 / Math.tan(FOV / 2);
-  const aspect = width / Math.max(1, height);
+  const aspect = Math.max(width / Math.max(1, height), 1.45);
   const ndcX = (cx / depth) * (focal / aspect);
   const ndcY = (cy / depth) * focal;
   return {
     x: (ndcX * 0.5 + 0.5) * width,
     y: (1 - (ndcY * 0.5 + 0.5)) * height,
-    scale: (height / 820) * (4.6 / depth),
+    scale: (Math.min(width, height) / 780) * (3.15 / depth),
   };
 }

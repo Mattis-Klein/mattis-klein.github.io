@@ -29,7 +29,8 @@ export function RangeIndex({ onInquire, onWholesale }: RangeIndexProps) {
           <h2 id="spec-title">Five groups, one distributor.</h2>
           <p>
             Surveillance, networking, access, and life safety sit alongside smart home. Smart home is one
-            group in the range, not the whole business. Everything here is sold as equipment.
+            group in the range, not the whole business. Everything here is sold as equipment. The pictures
+            illustrate those groups. They are not products manufactured by MHM Global.
           </p>
         </div>
         <div className="spec-list">
