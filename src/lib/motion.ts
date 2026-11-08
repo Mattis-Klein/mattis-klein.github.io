@@ -11,8 +11,7 @@ const SEQUENCE_END: Record<string, string> = {
   wholesale: "divide",
 };
 
-export function scrollToId(id: string): void {
-  const behavior = reducedMotion() ? "auto" : "smooth";
+export function scrollToId(id: string, behavior: ScrollBehavior = reducedMotion() ? "auto" : "smooth"): void {
   const wide = window.matchMedia("(min-width: 900px)").matches;
   if (!reducedMotion() && wide) {
     const name = SEQUENCE_END[id];

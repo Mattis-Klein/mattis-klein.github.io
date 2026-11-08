@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { About } from "./components/About";
 import { Contact } from "./components/Contact";
 import { DivideSequence } from "./components/DivideSequence";
@@ -15,6 +15,29 @@ export function App() {
   const [inquiryType, setInquiryType] = useState<InquiryKind | "">("");
   const [regarding, setRegarding] = useState("");
   const [, setOpenCategory] = useState<CategoryId>("surveillance");
+
+  useEffect(() => {
+    function followHash() {
+      const id = window.location.hash.replace(/^#/, "");
+      if (!id || id === "top") {
+        if (window.scrollY > 2) window.scrollTo({ top: 0, behavior: "auto" });
+        return;
+      }
+      const target = document.getElementById(id);
+      if (!target) return;
+      if (Math.abs(target.getBoundingClientRect().top) < 120) return;
+      scrollToId(id, "auto");
+    }
+    followHash();
+    const frame = window.requestAnimationFrame(followHash);
+    const timer = window.setTimeout(followHash, 400);
+    window.addEventListener("hashchange", followHash);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.clearTimeout(timer);
+      window.removeEventListener("hashchange", followHash);
+    };
+  }, []);
 
   function inquire(type: InquiryKind, about = "") {
     setInquiryType(type);

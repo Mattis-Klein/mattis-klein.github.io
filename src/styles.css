@@ -1956,12 +1956,12 @@ main {
   }
 }
 
-.field,
+section.field,
 .field-hero {
   overflow: hidden;
 }
 
-.field {
+section.field {
   margin-top: calc(var(--nav-h) * -1);
 }
 
