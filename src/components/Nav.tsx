@@ -29,6 +29,10 @@ export function Nav({ open, setOpen, onInquire }: NavProps) {
       .filter((node): node is HTMLElement => Boolean(node));
     const observer = new IntersectionObserver(
       (entries) => {
+        if (window.scrollY < window.innerHeight * 0.5) {
+          setCurrent("home");
+          return;
+        }
         const visible = entries
           .filter((entry) => entry.isIntersecting)
           .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
@@ -38,7 +42,7 @@ export function Nav({ open, setOpen, onInquire }: NavProps) {
     );
     sections.forEach((section) => observer.observe(section));
     const onScroll = () => {
-      if (window.scrollY < 48) setCurrent("home");
+      if (window.scrollY < window.innerHeight * 0.45) setCurrent("home");
       setScrolled(window.scrollY > 8);
     };
     onScroll();

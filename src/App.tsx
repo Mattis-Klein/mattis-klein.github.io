@@ -1,25 +1,23 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { About } from "./components/About";
 import { Categories } from "./components/Categories";
 import { Contact } from "./components/Contact";
+import { FieldSequence } from "./components/FieldSequence";
 import { Footer } from "./components/Footer";
-import { Hero } from "./components/Hero";
-import { ModuleFlight } from "./components/ModuleFlight";
+import { MatrixSequence } from "./components/MatrixSequence";
 import { Nav } from "./components/Nav";
-import { PageRail } from "./components/PageRail";
-import { Wholesale } from "./components/Wholesale";
 import type { CategoryId } from "./content";
-import { useStoryMotion } from "./hooks/useStoryMotion";
+import { useWide } from "./hooks/useWide";
 import type { InquiryKind } from "./lib/inquiry";
-import { scrollToId } from "./lib/motion";
+import { reducedMotion, scrollToId } from "./lib/motion";
 
 export function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [inquiryType, setInquiryType] = useState<InquiryKind | "">("");
   const [regarding, setRegarding] = useState("");
   const [openCategory, setOpenCategory] = useState<CategoryId>("surveillance");
-  const storyRef = useRef<HTMLDivElement>(null);
-  useStoryMotion(storyRef);
+  const wide = useWide();
 
   function inquire(type: InquiryKind, about = "") {
     setInquiryType(type);
@@ -34,6 +32,17 @@ export function App() {
   function showCategory(id: CategoryId) {
     setOpenCategory(id);
     setMenuOpen(false);
+    if (wide && !reducedMotion()) {
+      const trigger = ScrollTrigger.getById("field");
+      if (trigger) {
+        window.scrollTo({
+          top: Math.max(0, trigger.end - 6),
+          behavior: reducedMotion() ? "auto" : "smooth",
+        });
+        window.setTimeout(() => document.getElementById(`tab-${id}`)?.focus(), 0);
+        return;
+      }
+    }
     scrollToId(`category-${id}`);
   }
 
@@ -45,18 +54,23 @@ export function App() {
       <Nav open={menuOpen} setOpen={setMenuOpen} onInquire={() => inquire("business")} />
       <div inert={menuOpen ? true : undefined}>
         <main id="content" tabIndex={-1}>
-          <PageRail />
-          <div className="story-scope" ref={storyRef}>
-            <Hero onWholesale={() => inquire("wholesale")} />
+          <FieldSequence
+            wide={wide}
+            openId={openCategory}
+            onSelect={setOpenCategory}
+            onInquire={(title) => inquire("business", title)}
+            onWholesale={() => inquire("wholesale")}
+          />
+          {wide ? null : (
             <Categories
+              mode="stack"
               openId={openCategory}
               onSelect={setOpenCategory}
               onInquire={(title) => inquire("business", title)}
             />
-            <ModuleFlight />
-          </div>
+          )}
           <About />
-          <Wholesale onInquire={() => inquire("wholesale")} />
+          <MatrixSequence onInquire={() => inquire("wholesale")} />
           <Contact
             inquiryType={inquiryType}
             setInquiryType={setInquiryType}

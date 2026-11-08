@@ -7,17 +7,20 @@ type CategoriesProps = {
   openId: CategoryId;
   onSelect: (id: CategoryId) => void;
   onInquire: (title: string) => void;
+  mode?: "section" | "overlay" | "stack";
 };
 
-export function Categories({ openId, onSelect, onInquire }: CategoriesProps) {
-  const [wide, setWide] = useState(() => window.matchMedia("(min-width: 801px)").matches);
+export function Categories({ openId, onSelect, onInquire, mode = "section" }: CategoriesProps) {
+  const [autoWide, setAutoWide] = useState(() => window.matchMedia("(min-width: 900px)").matches);
 
   useEffect(() => {
-    const media = window.matchMedia("(min-width: 801px)");
-    const onChange = () => setWide(media.matches);
+    const media = window.matchMedia("(min-width: 900px)");
+    const onChange = () => setAutoWide(media.matches);
     media.addEventListener("change", onChange);
     return () => media.removeEventListener("change", onChange);
   }, []);
+
+  const wide = mode === "overlay" ? true : mode === "stack" ? false : autoWide;
 
   function onTabsKey(event: KeyboardEvent<HTMLDivElement>) {
     const next = categoryFromKey(openId, event.key);
@@ -31,13 +34,14 @@ export function Categories({ openId, onSelect, onInquire }: CategoriesProps) {
 
   const selected = categories.find((category) => category.id === openId) ?? categories[0];
 
+  const Tag = mode === "overlay" ? "div" : "section";
+
   return (
-    <section
-      className="section section-mist"
-      id="categories"
+    <Tag
+      className={mode === "overlay" ? "range-embed" : "section section-mist"}
+      id={mode === "overlay" ? undefined : "categories"}
       aria-labelledby="categories-title"
-      data-scrub
-      tabIndex={-1}
+      tabIndex={mode === "overlay" ? undefined : -1}
     >
       <div className="section-head">
         <p className="eyebrow">
@@ -90,7 +94,7 @@ export function Categories({ openId, onSelect, onInquire }: CategoriesProps) {
             aria-labelledby={`tab-${selected.id}`}
             key={selected.id}
           >
-            <div className="stage-art">
+            <div className="stage-art" data-stage-art>
               <SculptForm id={selected.id} />
             </div>
             <div className="stage-copy">
@@ -134,6 +138,6 @@ export function Categories({ openId, onSelect, onInquire }: CategoriesProps) {
           ))}
         </div>
       )}
-    </section>
+    </Tag>
   );
 }
