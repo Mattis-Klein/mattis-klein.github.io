@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import type { CategoryId } from "../content";
 import { assemblyPose, bayCamera, clusterFactors, framedCamera, projectPart, plinthScale, type PartId } from "../lib/bay";
+import { openingLight, partArrival, shouldPlayOpening } from "../lib/opening";
 import { CATEGORY_IDS } from "../content";
 import { buildAssembly } from "./buildAssembly";
 
@@ -11,7 +12,7 @@ type AssemblyCanvasProps = {
 };
 
 export type AssemblyHandle = {
-  setFrame: (progress: number, focus: CategoryId | null) => void;
+  setFrame: (progress: number, focus: CategoryId | null, opening?: number) => void;
 };
 
 type Props = AssemblyCanvasProps & {
@@ -23,6 +24,7 @@ function applyPose(
   progress: number,
   focus: CategoryId | null,
   tighten = 1,
+  opening = 1,
 ): void {
   const pose = assemblyPose(progress);
   const scales = plinthScale(progress);
@@ -39,14 +41,19 @@ function applyPose(
   const cx = ids.reduce((sum, id) => sum + pose[id].x, 0) / ids.length;
   const cy = ids.reduce((sum, id) => sum + pose[id].y, 0) / ids.length;
   const cz = ids.reduce((sum, id) => sum + pose[id].z, 0) / ids.length;
+  const gathering = opening < 0.999 && progress < 0.004;
   for (const [id, object] of Object.entries(parts) as [PartId, THREE.Object3D][]) {
     const next = pose[id];
     const pulled = ids.includes(id as CategoryId);
-    object.position.set(
-      pulled ? cx + (next.x - cx) * tighten : next.x,
-      pulled ? cy + (next.y - cy) * tighten : next.y,
-      pulled ? cz + (next.z - cz) * tighten : next.z,
-    );
+    let x = pulled ? cx + (next.x - cx) * tighten : next.x;
+    let y = pulled ? cy + (next.y - cy) * tighten : next.y;
+    const z = pulled ? cz + (next.z - cz) * tighten : next.z;
+    if (gathering && pulled) {
+      const travel = 1 - partArrival(opening, id as CategoryId);
+      x = cx + (x - cx) * (1 - 0.5 * travel);
+      y = cy + (y - cy) * (1 - 0.5 * travel) - 0.08 * travel;
+    }
+    object.position.set(x, y, z);
     object.rotation.set(next.rx, next.ry, next.rz);
   }
   parts.plinthA.scale.setScalar(scales.a);
@@ -86,7 +93,8 @@ export function AssemblyCanvas({ reduced, onStatus, handleRef }: Props) {
     scene.background = new THREE.Color(0xf4f7fb);
 
     const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 40);
-    scene.add(new THREE.HemisphereLight(0xffffff, 0xc5d4e4, 1.15));
+    const hemi = new THREE.HemisphereLight(0xffffff, 0xc5d4e4, 1.15);
+    scene.add(hemi);
     const key = new THREE.DirectionalLight(0xfff8f2, 1.8);
     key.position.set(4, 6, 3);
     const fill = new THREE.DirectionalLight(0xd7e6f4, 0.7);
@@ -105,15 +113,15 @@ export function AssemblyCanvas({ reduced, onStatus, handleRef }: Props) {
 
     let progress = 0;
     let focus: CategoryId | null = null;
-    const started = performance.now();
-    const life = { on: true };
-    let frame = 0;
-
-    const draw = (now: number) => {
-      const intro = reduced ? 1 : Math.min(1, (now - started) / 1100);
-      const eased = intro * intro * (3 - 2 * intro);
-      const live = progress > 0.001 ? 1 : eased;
-      const shown = progress * live;
+    let opening = shouldPlayOpening({
+      scrollY: window.scrollY,
+      hash: window.location.hash,
+      reduced,
+    })
+      ? 0
+      : 1;
+    const draw = () => {
+      const shown = progress;
       const width = parent.clientWidth || 1;
       const height = parent.clientHeight || 1;
       const raw = CATEGORY_IDS.map((id) => ({
@@ -122,18 +130,14 @@ export function AssemblyCanvas({ reduced, onStatus, handleRef }: Props) {
       }));
       const factors = clusterFactors(raw, width, height);
       const tighten = factors.spread / Math.max(0.2, factors.size);
-      applyPose(parts, shown + 0.2 * (1 - live), progress > 0.001 ? focus : null, tighten);
+      applyPose(parts, shown, shown > 0.001 ? focus : null, tighten, opening);
+      const awake = shown < 0.004 && opening < 0.999 ? openingLight(opening) : 1;
+      hemi.intensity = 0.4 + 0.75 * awake;
+      key.intensity = 0.35 + 1.45 * awake;
       const cam = framedCamera(shown, camera.aspect, tighten);
       camera.position.set(cam.x, cam.y, cam.z);
       camera.lookAt(cam.tx, cam.ty, cam.tz);
       renderer.render(scene, camera);
-    };
-
-    const loop = (now: number) => {
-      if (!life.on) return;
-      draw(now);
-      const introDone = reduced || performance.now() - started > 1100;
-      if (!introDone) frame = window.requestAnimationFrame(loop);
     };
 
     const resize = () => {
@@ -143,15 +147,16 @@ export function AssemblyCanvas({ reduced, onStatus, handleRef }: Props) {
       renderer.setSize(width, height, false);
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
-      draw(performance.now());
+      draw();
     };
 
     handleRef.current = {
-      setFrame: (next, nextFocus) => {
+      setFrame: (next, nextFocus, nextOpening = 1) => {
         progress = next;
         focus = nextFocus;
+        opening = nextOpening;
         if (document.hidden) return;
-        draw(performance.now());
+        draw();
       },
     };
 
@@ -163,24 +168,20 @@ export function AssemblyCanvas({ reduced, onStatus, handleRef }: Props) {
     const observer = new ResizeObserver(resize);
     observer.observe(parent);
     const onVisible = () => {
-      if (!document.hidden) draw(performance.now());
+      if (!document.hidden) draw();
     };
     document.addEventListener("visibilitychange", onVisible);
     resize();
     const sample = performance.now();
-    draw(sample);
+    draw();
     if (performance.now() - sample > 40) {
       onStatus(false);
-      life.on = false;
       renderer.dispose();
       return;
     }
-    frame = window.requestAnimationFrame(loop);
     onStatus(true);
 
     return () => {
-      life.on = false;
-      window.cancelAnimationFrame(frame);
       handleRef.current = null;
       canvas.removeEventListener("webglcontextlost", onLost);
       document.removeEventListener("visibilitychange", onVisible);

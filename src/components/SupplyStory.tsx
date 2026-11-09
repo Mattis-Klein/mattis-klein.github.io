@@ -2,6 +2,7 @@ import { lazy, Suspense, useCallback, useEffect, useRef, useState, type Keyboard
 import { categories, categoryById, type CategoryId } from "../content";
 import { useWide } from "../hooks/useWide";
 import { copyOpacity, storyPhase, type StoryBeat } from "../lib/bay";
+import { openingClock, shouldPlayOpening } from "../lib/opening";
 import { categoryFromKey } from "../lib/categoryStage";
 import { scrollToId } from "../lib/motion";
 import type { AssemblyHandle } from "../scene/AssemblyCanvas";
@@ -27,7 +28,10 @@ export function SupplyStory({ onInquire, onWholesale }: SupplyStoryProps) {
   const rootRef = useRef<HTMLElement>(null);
   const handleRef = useRef<AssemblyHandle | null>(null);
   const wide = useWide();
-  const [reduced, setReduced] = useState(false);
+  const [reduced, setReduced] = useState(
+    () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+  );
+  const openingRef = useRef(1);
   const [engine, setEngine] = useState<"sprites" | "gl">(() => (hardwareGL() ? "gl" : "sprites"));
   const [focus, setFocus] = useState<CategoryId>("surveillance");
   const [beat, setBeat] = useState<StoryBeat>("assembly");
@@ -50,9 +54,74 @@ export function SupplyStory({ onInquire, onWholesale }: SupplyStoryProps) {
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return;
+    let frame = 0;
+    let start = performance.now();
+    let pausedAt = 0;
+    const play = shouldPlayOpening({
+      scrollY: window.scrollY,
+      hash: window.location.hash,
+      reduced,
+    });
+    openingRef.current = play ? 0 : 1;
+    root.dataset.opening = play ? "0" : "1";
+    root.classList.toggle("is-opening", play);
+    if (!play) {
+      root.classList.add("is-open");
+      handleRef.current?.setFrame(0, null, 1);
+    }
+    const finish = () => {
+      window.cancelAnimationFrame(frame);
+      openingRef.current = 1;
+      root.dataset.opening = "1";
+      root.classList.remove("is-opening");
+      root.classList.add("is-open");
+    };
+    const tick = (now: number) => {
+      if (document.hidden) {
+        pausedAt = now;
+        return;
+      }
+      if (pausedAt) {
+        start += now - pausedAt;
+        pausedAt = 0;
+      }
+      if (window.scrollY > 4) {
+        finish();
+        return;
+      }
+      const clock = openingClock(now - start);
+      openingRef.current = clock;
+      root.dataset.opening = clock.toFixed(3);
+      handleRef.current?.setFrame(0, null, clock);
+      if (clock < 1) frame = window.requestAnimationFrame(tick);
+      else finish();
+    };
+    const onHide = () => {
+      if (!document.hidden && openingRef.current < 1 && !root.classList.contains("is-open")) {
+        frame = window.requestAnimationFrame(tick);
+      }
+    };
+    if (play) frame = window.requestAnimationFrame(tick);
+    document.addEventListener("visibilitychange", onHide);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      document.removeEventListener("visibilitychange", onHide);
+    };
+  }, [reduced]);
+
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
     const read = () => {
+      if (window.scrollY > 4 && openingRef.current < 1) {
+        openingRef.current = 1;
+        root.dataset.opening = "1";
+        root.classList.remove("is-opening");
+        root.classList.add("is-open");
+      }
       if (!motion) {
-        handleRef.current?.setFrame(0, null);
+        if (openingRef.current < 1) return;
+        handleRef.current?.setFrame(0, null, 1);
         setBeat("assembly");
         setPin("start");
         return;
@@ -66,7 +135,8 @@ export function SupplyStory({ onInquire, onWholesale }: SupplyStoryProps) {
       const progress = scrolled / travel;
       const nextPin = rect.bottom <= nav + stickyH ? "end" : rect.top < nav ? "fixed" : "start";
       setPin((current) => (current === nextPin ? current : nextPin));
-      handleRef.current?.setFrame(progress, focus);
+      if (openingRef.current < 1 && progress < 0.004 && window.scrollY <= 4) return;
+      handleRef.current?.setFrame(progress, focus, 1);
       const next = storyPhase(progress);
       setBeat((current) => (current === next ? current : next));
       const opacity = copyOpacity(progress);
